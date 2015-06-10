@@ -380,7 +380,42 @@ class AccountListener:
         """
         :returns: info of the user in the req.header
         """
-        pass
+        logging.debug('in account get')
+        resp_dict = {}
+
+        try:
+            username = req.get_header('username') or 'un'
+            password = req.get_header('password') or 'pw'
+            # email = req.get_header('email') or 'email'
+            # params = req.get_param_as_list()
+            # logging.debug('params:%s'%params)
+            logging.debug('username:%s, password:%s' % 
+                (username, password))
+        except:
+            raise falcon.HTTPBadRequest('bad req', 
+                'when read from req, please check if the req is correct.')
+        
+        try:
+            logging.debug('in account model get')
+
+            user = AccountModel.get(AccountModel.username==username, 
+                                        AccountModel.password==password)
+
+            resp_dict['info'] = 'successfully get user:%s' % username
+            resp_dict['username'] = user.username
+            resp_dict['email'] = user.email
+            resp_dict['account_level'] = user.account_level
+            resp_dict['join_date'] = user.join_date
+            resp.status = falcon.HTTP_200
+
+        except:
+            # `username` is a unique column, so this username already exists,
+            # making it safe to call .get().
+            resp_dict['info'] = 'user:%s does not exist or password not right' % username
+            logging.debug('user does not exist or password not right...')
+            resp.status = falcon.HTTP_200
+        resp.body = json.dumps(resp_dict, encoding='utf-8')
+
 
     def on_delete(self, req, resp):
         """
