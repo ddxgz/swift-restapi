@@ -15,6 +15,7 @@ import swiftclient
 import peewee
 
 from config import Config
+from models import AccountModel, database
 
 logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
     level=logging.DEBUG)
@@ -51,8 +52,8 @@ class PathListener:
 
             storage_url, auth_token = swiftclient.client.get_auth(
                                     self.conf.auth_url,
-                                    username,
-                                    password,
+                                    self.conf.account_username,
+                                  self.conf.password,
                                   auth_version=1)
             # logging.debug('rs: %s'% swiftclient.client.get_auth(
             #                         self.conf.auth_url,
@@ -107,8 +108,8 @@ class HomeListener:
             logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
                 self.conf.auth_url, self.conf.auth_version))
             conn = swiftclient.Connection(self.conf.auth_url,
-                                  username,
-                                  password,
+                                  self.conf.account_username,
+                                  self.conf.password,
                                   auth_version=self.conf.auth_version or 1)
             meta, objects = conn.get_container(self.conf.container)
             logging.debug('meta: %s,   objects: %s' % (meta, objects))
@@ -146,8 +147,8 @@ class HomeListener:
             # logging.debug('self.conf.auth_url: %s,   conf.auth_version: %s' % (
             #     self.conf.auth_url, self.conf.auth_version))
             conn = swiftclient.Connection(self.conf.auth_url,
-                                  username,
-                                  password,
+                                  self.conf.account_username,
+                                  self.conf.password,
                                   auth_version=self.conf.auth_version or 1)
             conn.put_object('disk', 'testfile', req.stream, 
                 chunk_size=65536)
@@ -203,8 +204,8 @@ class DiskSinkAdapter(object):
             try:
                 storage_url, auth_token = swiftclient.client.get_auth(
                                         self.conf.auth_url,
-                                        username,
-                                      password,
+                                        self.conf.account_username,
+                                      self.conf.password,
                                       auth_version=1)
                 logging.debug('url:%s, toekn:%s' % (storage_url, auth_token))
                 temp_url = get_temp_url(storage_url, auth_token,
@@ -230,8 +231,8 @@ class DiskSinkAdapter(object):
 
                 storage_url, auth_token = swiftclient.client.get_auth(
                                         self.conf.auth_url,
-                                        username,
-                                      password,
+                                        self.conf.account_username,
+                                      self.conf.password,
                                       auth_version=1)
       
                 logging.debug('url:%s, token:%s' % (storage_url, auth_token))
@@ -273,8 +274,8 @@ class DiskSinkAdapter(object):
                 #                               self.conf.container, path2file)
                 
                 conn = swiftclient.client.Connection(self.conf.auth_url,
-                                  username,
-                                  password,
+                                  self.conf.account_username,
+                                  self.conf.password,
                                   auth_version=self.conf.auth_version or 1)
                 meta, objects = conn.get_container(self.conf.container, 
                     prefix=path2file)
@@ -304,13 +305,99 @@ class DiskSinkAdapter(object):
 
 
 
+class AccountListener:
+    def __init__(self):
+        self.conf = Config('swiftconf.conf')
+
+    def on_post(self, req, resp):
+        """
+        :param req.header.username: the username
+        :param req.header.password: password 
+        :param req.header.email: email 
+
+        :returns: a json contains info of the operation, if the register is
+            success or failed
+        """
+        logging.debug('in account post')
+        resp_dict = {}
+
+        try:
+            username = req.get_header('username') or 'un'
+            password = req.get_header('password') or 'pw'
+            email = req.get_header('email') or 'email'
+            # params = req.get_param_as_list()
+            # logging.debug('params:%s'%params)
+            logging.debug('username:%s, password:%s, email:%s' % 
+                (username, password, email))
+        except:
+            raise falcon.HTTPBadRequest('bad req', 
+                'when read from req, please check if the req is correct.')
+        
+        try:
+            logging.debug('in account post create')
+
+            with database.atomic():
+                AccountModel.create(username=username, 
+                    password=password,
+                    email=email,
+                    join_date=str(datetime.datetime.now())+' GMT+8',
+                    account_level=0)
+            resp_dict['info'] = 'successfully create user:%s' % username
+            resp.status = falcon.HTTP_201
+
+        except peewee.IntegrityError:
+            logging.debug('in account post create except')
+
+            # `username` is a unique column, so this username already exists,
+            # making it safe to call .get().
+            old_user = AccountModel.get(AccountModel.username == username)
+            logging.debug('user exists...')
+            resp_dict['info'] = 'user exists, did not create user:%s' % username
+            resp.status = falcon.HTTP_403
+
+
+        # try:
+        #     # post_data = req.env
+        #     # logging.debug('env:%s , \nstream:%s, \ncontext:%s, \ninput:%s' % (
+        #     #     req.env, req.stream.read(), req.context, req.env['wsgi.input'].read()))
+        #     AccountModel.select().where(username == username))
+
+        #     user = AccountModel.create(
+        #         username=username,
+        #         password=password,
+        #         email=email,
+        #         join_date=str(datetime.datetime.now())+' GMT+8')
+        #     user.save()
+
+        #     resp_dict = {}
+        #     resp_dict['info'] = 'successfully create user:%s' % username
+        # except:
+        #     raise falcon.HTTPBadRequest('bad req', 
+        #         'username or password or email not correct or exist!')
+        resp.body = json.dumps(resp_dict, encoding='utf-8')
+
+    def on_get(self, req, resp):
+        """
+        :returns: info of the user in the req.header
+        """
+        pass
+
+    def on_delete(self, req, resp):
+        """
+        delete the account, and all the files belong to this account
+        """
+        pass
+
+
 app = falcon.API()
 
 home_listener = HomeListener()
 path_listener = PathListener()
+account_listener = AccountListener()
 
 # app.add_route('/v1/disk/{path}/{file}', path_listener)
 app.add_route('/v1/disk', home_listener)
+app.add_route('/v1/account', account_listener)
 # app.add_route('/v1/disk/{filename}', home_listener)
 
 sink = DiskSinkAdapter()
