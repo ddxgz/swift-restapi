@@ -304,7 +304,6 @@ class DiskSinkAdapter(object):
             sort_keys=True, indent=4)
 
 
-
 class AccountListener:
     def __init__(self):
         self.conf = Config('swiftconf.conf')
@@ -354,26 +353,6 @@ class AccountListener:
             logging.debug('user exists...')
             resp_dict['info'] = 'user exists, did not create user:%s' % username
             resp.status = falcon.HTTP_403
-
-
-        # try:
-        #     # post_data = req.env
-        #     # logging.debug('env:%s , \nstream:%s, \ncontext:%s, \ninput:%s' % (
-        #     #     req.env, req.stream.read(), req.context, req.env['wsgi.input'].read()))
-        #     AccountModel.select().where(username == username))
-
-        #     user = AccountModel.create(
-        #         username=username,
-        #         password=password,
-        #         email=email,
-        #         join_date=str(datetime.datetime.now())+' GMT+8')
-        #     user.save()
-
-        #     resp_dict = {}
-        #     resp_dict['info'] = 'successfully create user:%s' % username
-        # except:
-        #     raise falcon.HTTPBadRequest('bad req', 
-        #         'username or password or email not correct or exist!')
         resp.body = json.dumps(resp_dict, encoding='utf-8')
 
     def on_get(self, req, resp):

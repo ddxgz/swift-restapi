@@ -3,7 +3,9 @@ swift-webstorage-restapi
 
 API v1:
 ---------------
-####GET
+
+####Files
+#####GET
 
 > /v1/disk/
 >> return a json contains metadate and all the files and folds
@@ -11,17 +13,25 @@ API v1:
 > /v1/disk/{path2file or path}
 >> return a tempo_url which can download the file
 
-####PUT
+#####PUT
 
 > /v1/disk/{path2file or path}
 >> return a storage_url and auth_token which can be used to PUT the file to the storage_url with auth_token in the header
 
-####DELETE
+#####DELETE
 > /v1/disk/{path2file or path}
 >> return an info tells whether the delete success or not
 
 
+####Account
+#####GET
+> /v1/account/
+>> return a json contains info of the user account
 
+
+#####POST
+> /v1/account/
+>> return an info whether the account create success or not
 
 
 
