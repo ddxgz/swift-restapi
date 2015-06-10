@@ -51,8 +51,8 @@ class PathListener:
 
             storage_url, auth_token = swiftclient.client.get_auth(
                                     self.conf.auth_url,
-                                    self.conf.account_username,
-                                  self.conf.password,
+                                    username,
+                                    password,
                                   auth_version=1)
             # logging.debug('rs: %s'% swiftclient.client.get_auth(
             #                         self.conf.auth_url,
@@ -107,8 +107,8 @@ class HomeListener:
             logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
                 self.conf.auth_url, self.conf.auth_version))
             conn = swiftclient.Connection(self.conf.auth_url,
-                                  self.conf.account_username,
-                                  self.conf.password,
+                                  username,
+                                  password,
                                   auth_version=self.conf.auth_version or 1)
             meta, objects = conn.get_container(self.conf.container)
             logging.debug('meta: %s,   objects: %s' % (meta, objects))
@@ -146,8 +146,8 @@ class HomeListener:
             # logging.debug('self.conf.auth_url: %s,   conf.auth_version: %s' % (
             #     self.conf.auth_url, self.conf.auth_version))
             conn = swiftclient.Connection(self.conf.auth_url,
-                                  self.conf.account_username,
-                                  self.conf.password,
+                                  username,
+                                  password,
                                   auth_version=self.conf.auth_version or 1)
             conn.put_object('disk', 'testfile', req.stream, 
                 chunk_size=65536)
@@ -203,8 +203,8 @@ class DiskSinkAdapter(object):
             try:
                 storage_url, auth_token = swiftclient.client.get_auth(
                                         self.conf.auth_url,
-                                        self.conf.account_username,
-                                      self.conf.password,
+                                        username,
+                                      password,
                                       auth_version=1)
                 logging.debug('url:%s, toekn:%s' % (storage_url, auth_token))
                 temp_url = get_temp_url(storage_url, auth_token,
@@ -230,8 +230,8 @@ class DiskSinkAdapter(object):
 
                 storage_url, auth_token = swiftclient.client.get_auth(
                                         self.conf.auth_url,
-                                        self.conf.account_username,
-                                      self.conf.password,
+                                        username,
+                                      password,
                                       auth_version=1)
       
                 logging.debug('url:%s, token:%s' % (storage_url, auth_token))
@@ -273,8 +273,8 @@ class DiskSinkAdapter(object):
                 #                               self.conf.container, path2file)
                 
                 conn = swiftclient.client.Connection(self.conf.auth_url,
-                                  self.conf.account_username,
-                                  self.conf.password,
+                                  username,
+                                  password,
                                   auth_version=self.conf.auth_version or 1)
                 meta, objects = conn.get_container(self.conf.container, 
                     prefix=path2file)
