@@ -92,8 +92,8 @@ def get_fine_grained_temp_key(storage_url, auth_token, container_name=None):
 
 
 def get_temp_url(storage_url, auth_token, container, objectname, expires=6000):
-    # key = get_temp_key(storage_url, auth_token)
-    key = get_fine_temp_key(storage_url, auth_token)
+    key = get_temp_key(storage_url, auth_token)
+    # key = get_fine_temp_key(storage_url, auth_token, container)
     logging.debug(' storage_url in get_temp_url: %s ' % storage_url)
     if not key:
         return None

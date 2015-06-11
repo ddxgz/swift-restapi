@@ -59,20 +59,33 @@ class Visit():
 		return page
 
 
-# headers = { 'username':'test:tester',
-# 			'password':'testing' }
-# visit = Visit('http://10.200.44.84:8081/v1/disk')
-# visit.get(headers=headers)
+
+headers = { 'username':'test:tester',
+			'password':'testing' }
+visit = Visit('http://10.200.44.84:8080/v1/disk')
+visit.get(headers=headers)
 # visit.put(suffix_url='/curl.py', headers=headers)
 # visit.put_file(filename='curl.py', suffix_url='/fold3/curl.py', headers=headers)
 # visit.delete(suffix_url='/fold3/curl.py', headers=headers)
 
-headers = { 'username':'user1',
-			'password':'password1',
-			'email':'user2@email.com' }
-data = { 'username':'user1',
-			'password':'password1',
-			'email':'user1@email.com' }
-visit = Visit('http://10.200.44.84:8090/v1/account')
-visit.get(headers=headers)
+# headers = { 'username':'user1',
+# 			'password':'password1',
+# 			'email':'user2@email.com' }
+# data = { 'username':'user1',
+# 			'password':'password1',
+# 			'email':'user1@email.com' }
+# visit = Visit('http://10.200.44.84:8090/v1/account')
+# visit.get(headers=headers)
 # visit.post(headers=headers, data=urllib.urlencode(data))
+
+# headers = { 'Content-Type':'application/json'}
+# data = { "auth": 
+# 			{"passwordCredentials":
+# 				{"username": "tester", 
+# 				"password": "testing"},
+# 				"tenantName":"restapi"
+# 			}
+# 		}
+# keytonevisit = Visit('http://10.200.44.66:5000/v2.0/tokens')
+# # keytonevisit.get(headers=headers)
+# keytonevisit.post(headers=headers, data=urllib.urlencode(data))
