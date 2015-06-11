@@ -4,6 +4,7 @@ import datetime
 from peewee import SqliteDatabase, Model, CharField, BooleanField, IntegerField
 
 from config import Config
+from myexceptions import UserNotExistException, PasswordIncorrectException
 
 
 logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
@@ -29,9 +30,29 @@ class AccountModel(BaseModel):
     email = CharField()
     join_date = CharField()
     account_level = IntegerField()
+    swift_tenant = CharField()
+    swift_username = CharField()
+    swift_password = CharField()
 
     class Meta:
         order_by = ('username',)
+
+    @classmethod
+    def auth(cls, username, password):
+        try:
+            user = AccountModel.get(AccountModel.username==username, 
+                             AccountModel.password==password)
+        except:
+            logging.debug('in model, got old_user')
+            old_user = AccountModel.get(AccountModel.username==username)
+            if old_user:
+                raise PasswordIncorrectException()
+            else:
+                logging.debug('in model, not got old_user')
+
+                raise UserNotExistException()
+        else:
+            return user
 
 
 def create_tables():
@@ -51,6 +72,8 @@ def test():
             # making it safe to call .get().
     old_user = AccountModel.get(AccountModel.username == 'user1')
     logging.debug('user exists:%s'%old_user.email)
+
+
 # create_tables()
 
 # test()

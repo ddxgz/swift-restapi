@@ -1,0 +1,7 @@
+swiftrestapi:
+    build: .
+    command: gunicorn --debug --log-level debug -b 0.0.0.0:8090 restapi:app
+    ports:
+      - "8090:8090"
+    volumes:
+      - /home/pc/restapi:/restapi

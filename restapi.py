@@ -16,6 +16,8 @@ import peewee
 
 from config import Config
 from models import AccountModel, database
+from myexceptions import UserNotExistException, PasswordIncorrectException
+
 
 logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
     level=logging.DEBUG)
@@ -340,7 +342,14 @@ class AccountListener:
                     password=password,
                     email=email,
                     join_date=str(datetime.datetime.now())+' GMT+8',
-                    account_level=0)
+                    account_level=0,
+                    swift_tenant='test',
+                    swift_username=username,
+                    swift_password=password)
+            conn = swiftclient.client.Connection(self.conf.auth_url,
+                                  self.conf.account_username,
+                                  self.conf.password,
+                                  auth_version=self.conf.auth_version or 1)
             resp_dict['info'] = 'successfully create user:%s' % username
             resp.status = falcon.HTTP_201
 
@@ -353,6 +362,13 @@ class AccountListener:
             logging.debug('user exists...')
             resp_dict['info'] = 'user exists, did not create user:%s' % username
             resp.status = falcon.HTTP_403
+            try:
+                change_user = AccountModel.get(AccountModel.username==username, 
+                                AccountModel.password==password)
+            except:
+                logging.debug('change user data failed...')
+
+
         resp.body = json.dumps(resp_dict, encoding='utf-8')
 
     def on_get(self, req, resp):
@@ -377,8 +393,9 @@ class AccountListener:
         try:
             logging.debug('in account model get')
 
-            user = AccountModel.get(AccountModel.username==username, 
-                                        AccountModel.password==password)
+            # user = AccountModel.get(AccountModel.username==username, 
+            #                             AccountModel.password==password)
+            user = AccountModel.auth(username, password)
 
             resp_dict['info'] = 'successfully get user:%s' % username
             resp_dict['username'] = user.username
@@ -386,14 +403,23 @@ class AccountListener:
             resp_dict['account_level'] = user.account_level
             resp_dict['join_date'] = user.join_date
             resp.status = falcon.HTTP_200
+        except UserNotExistException:
+            logging.debug('in UserNotExistException')
 
-        except:
-            # `username` is a unique column, so this username already exists,
-            # making it safe to call .get().
-            resp_dict['info'] = 'user:%s does not exist or password not right' % username
-            logging.debug('user does not exist or password not right...')
-            resp.status = falcon.HTTP_200
-        resp.body = json.dumps(resp_dict, encoding='utf-8')
+            resp_dict['info'] = 'user:%s does not exist' % username
+            resp.body = json.dumps(resp_dict, encoding='utf-8')
+        except PasswordIncorrectException:
+            logging.debug('in PasswordIncorrectException')
+            resp_dict['info'] = 'user:%s password not correct' % username
+            resp.body = json.dumps(resp_dict, encoding='utf-8')
+        # except:
+        #     # `username` is a unique column, so this username already exists,
+        #     # making it safe to call .get().
+        #     resp_dict['info'] = 'user:%s does not exist or password not right' % username
+        #     logging.debug('user does not exist or password not right...')
+        #     resp.status = falcon.HTTP_200
+        else:
+            resp.body = json.dumps(resp_dict, encoding='utf-8')
 
 
     def on_delete(self, req, resp):
