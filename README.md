@@ -41,7 +41,9 @@ TODO
 - Verify if the request if ok, such as if the file exists when get,
 	or the path2file is a fold
 - set the temp_key expires time based on the size of target file
-
+- handling large files 
+- deal with when file with prefix dir upload to swift without pseudo fold created, need to create a pseudo first. This is not a problem when used by android client
+- report keystone add_user_role bug
 
 BUG
 ---------------
@@ -52,6 +54,12 @@ Functions
 - Download/upload files from/to Swift
 - Share files with links
 - Provide API for Android client
+
+
+Notifications
+---------------
+- when add a new role, need to add that role name to swift's proxy-server.conf
+
 
 Requirements
 ---------------

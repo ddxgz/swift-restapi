@@ -79,22 +79,28 @@ if __name__ == '__main__':
     #     -H "X-Auth-Token: AUTH_tk237f2dde05dc419c8ee825bb9d6e2f60"\
     #     http://10.200.46.211:8080/v1/AUTH_test/disk/curl.py')
 
-    data = '{ "auth": \
-            {"passwordCredentials":\
-                {"username": "tester", \
-                "password": "testing"},\
-                "tenantName":"restapi"\
-            }\
-        }'
+    # data = '{ "auth": \
+    #         {"passwordCredentials":\
+    #             {"username": "tester", \
+    #             "password": "testing"},\
+    #             "tenantName":"restapi"\
+    #         }\
+    #     }'
+    # aaa = commands.getoutput('curl \
+    #     -d %s\
+    #     http://10.200.46.66:5000/v2.0/tokens' % data)
+    # logging.debug('aaa stat:%s' % aaa)
+
+    # # this is ok to upload a file
+    # stat = commands.getoutput('curl -X POST --data-binary "@curl.py" \
+    #     -H "X-Auth-Token: 389a622fe8864b00b06ef5005d43cee1"\
+    #     http://10.200.46.66:8080/v1/AUTH_50a19616498c4d7da572d57bce20511e/disk/curl.py')
+    # logging.debug('put stat:%s' % stat)
+
+
     aaa = commands.getoutput('curl \
-        -d %s\
-        http://10.200.46.66:5000/v2.0/tokens' % data)
+        http://10.200.46.66:5000/v3.0')
     logging.debug('aaa stat:%s' % aaa)
 
-    # this is ok to upload a file
-    stat = commands.getoutput('curl -X POST --data-binary "@curl.py" \
-        -H "X-Auth-Token: 389a622fe8864b00b06ef5005d43cee1"\
-        http://10.200.46.66:8080/v1/AUTH_50a19616498c4d7da572d57bce20511e/disk/curl.py')
-    logging.debug('put stat:%s' % stat)
     # main()
     # print(str(datetime.datetime.now())+' GMT+8')

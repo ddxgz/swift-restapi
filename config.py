@@ -68,3 +68,9 @@ class Config(object):
                 self.auto_rename = 0
             else:
                 self.auto_rename = 1
+
+        if config.has_section('keystone'):
+            self.admin_token = config.get('keystone', 'admin_token')
+            self.auth_url_v2 = config.get('keystone', 'auth_url_v2')
+            self.endpoint_url_v2 = config.get('keystone', 'endpoint_url_v2')
+            
