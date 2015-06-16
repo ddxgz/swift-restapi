@@ -53,7 +53,7 @@ Functions
 ---------------
 - Download/upload files from/to Swift
 - Share files with links
-- Provide API for Android client
+- Provide API for clients of other platforms
 
 
 Notifications
@@ -64,10 +64,11 @@ Notifications
 Requirements
 ---------------
 The environment is organized as a docker container, locates in docker-compose/,
-just docker-compose up. 
+just docker-compose up. The port can be changed as you like in docker-compose.yml
 
 - Python >= 2.7 or 3.4
 - python-swiftclient >= 2.4.0
+- python-keystoneclient >= 1.4.0
 - Gunicorn or uWsgi
 - Falcon >= 0.3.0
 - peewee >= 2.6.1

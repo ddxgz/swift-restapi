@@ -1,6 +1,8 @@
 import logging
 import json
 
+import swiftclient
+
 from config import Config
 import keystonewrap
 
@@ -17,8 +19,21 @@ def createuser(swift_tenant, username, password, account_level):
     logging.debug('in swiftwrap createuser')
     user = keystonewrap.createuser(swift_tenant, username, password)
     logging.debug(json.dumps(user, encoding='utf-8'))
-    # for service in conf.services:
-    #     put_container(swift_tenant, username, service)
+    logging.debug('services:%s'%conf.services)
+    for container in conf.services:
+        logging.debug('recu')
+        put_container(swift_tenant, username, password, 
+            container)
     return user
+
+
+def put_container(swift_tenant, username, password, container):
+    logging.debug('swift_tenant:')
+
+    conn = swiftclient.Connection(conf.auth_url,
+                                  swift_tenant+':'+username,
+                                  password,
+                                  auth_version=2)
+    conn.put_container(container)
 
 # createuser(conf.account, 'tester402', 'testing', 0)

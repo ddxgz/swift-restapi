@@ -99,6 +99,7 @@ class HomeListener:
         :returns: a json contains all objects in disk container, and metameata
                 {"meta":{}, "objects":{"obj1": {}}}
         """
+        resp_dict = {}
         try:
             username = req.get_header('username') or 'un'
             password = req.get_header('password') or 'pw'
@@ -106,13 +107,46 @@ class HomeListener:
         except:
             raise falcon.HTTPBadRequest('bad req', 
                 'when read from req, please check if the req is correct.')
+        # try:
+        #     # if path2file:
+        #     logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
+        #         self.conf.auth_url, self.conf.auth_version))
+        #     conn = swiftclient.Connection(self.conf.auth_url,
+        #                           self.conf.account_username,
+        #                           self.conf.password,
+        #                           auth_version=self.conf.auth_version or 1)
+        #     meta, objects = conn.get_container(self.conf.container)
+        #     logging.debug('meta: %s,   objects: %s' % (meta, objects))
+        #     resp_dict = {}
+        #     resp_dict['meta'] = meta
+        #     logging.debug('resp_dict:%s' % resp_dict)
+        #     objs = {}
+        #     for obj in objects:
+        #         logging.debug('obj:%s' % obj.get('name'))
+        #         objs[obj.get('name')] = obj
+        #     resp_dict['objects'] = objs
+        # except:
+        #     raise falcon.HTTPBadRequest('bad req', 
+        #         'username or password not correct!')
+
         try:
-            # if path2file:
             logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
                 self.conf.auth_url, self.conf.auth_version))
+            # user = AccountModel.get(AccountModel.username==username, 
+            #                             AccountModel.password==password)
+            user = AccountModel.auth(username, password)
+            # logging.debug('1st resp_dict:%s' % resp_dict)
+
+            resp_dict['info'] = 'successfully get user:%s' % username
+            resp_dict['username'] = user.username
+            resp_dict['email'] = user.email
+            resp_dict['account_level'] = user.account_level
+            resp_dict['join_date'] = user.join_date
+            resp_dict['keystone_info'] = user.keystone_info
+            logging.debug('1st resp_dict:%s' % resp_dict)
             conn = swiftclient.Connection(self.conf.auth_url,
-                                  self.conf.account_username,
-                                  self.conf.password,
+                                  user.keystone_tenant+':'+user.keystone_username,
+                                  user.password,
                                   auth_version=self.conf.auth_version or 1)
             meta, objects = conn.get_container(self.conf.container)
             logging.debug('meta: %s,   objects: %s' % (meta, objects))
@@ -123,10 +157,17 @@ class HomeListener:
             for obj in objects:
                 logging.debug('obj:%s' % obj.get('name'))
                 objs[obj.get('name')] = obj
-            resp_dict['objects'] = objs
-        except:
-            raise falcon.HTTPBadRequest('bad req', 
-                'username or password not correct!')
+            resp_dict['objects'] = objs        
+        except UserNotExistException:
+            logging.debug('in UserNotExistException')
+
+            resp_dict['info'] = 'user:%s does not exist' % username
+            resp.body = json.dumps(resp_dict, encoding='utf-8')
+        except PasswordIncorrectException:
+            logging.debug('in PasswordIncorrectException')
+            resp_dict['info'] = 'user:%s password not correct' % username
+            resp.body = json.dumps(resp_dict, encoding='utf-8')
+        
         resp.status = falcon.HTTP_200
         resp.body = json.dumps(resp_dict, encoding='utf-8', 
             sort_keys=True, indent=4)
@@ -423,7 +464,7 @@ class AccountListener:
             resp_dict['account_level'] = user.account_level
             resp_dict['join_date'] = user.join_date
             resp_dict['keystone_info'] = user.keystone_info
-            
+
             resp.status = falcon.HTTP_200
         except UserNotExistException:
             logging.debug('in UserNotExistException')

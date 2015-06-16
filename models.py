@@ -42,9 +42,12 @@ class AccountModel(BaseModel):
 
     @classmethod
     def auth(cls, username, password):
+        logging.debug('in auth')
+
         try:
             user = AccountModel.get(AccountModel.username==username, 
                              AccountModel.password==password)
+
         except:
             logging.debug('in model, got old_user')
             old_user = AccountModel.get(AccountModel.username==username)
@@ -55,6 +58,7 @@ class AccountModel(BaseModel):
 
                 raise UserNotExistException()
         else:
+            logging.debug('after ger user%s'%user.username)
             return user
 
 
@@ -77,6 +81,6 @@ def test():
     logging.debug('user exists:%s'%old_user.email)
 
 
-create_tables()
+# create_tables()
 
 # test()
