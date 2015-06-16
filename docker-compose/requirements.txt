@@ -1,3 +1,4 @@
 python-swiftclient
+python-keystoneclient
 falcon
 peewee

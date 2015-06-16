@@ -22,12 +22,14 @@ kc = client.Client(token=conf.admin_token,
 # kc.tenants.create(tenant_name='test4', description='test4 tenant', 
 #     enabled=True)
 
-tenants = kc.tenants.list()
+atenants = kc.tenants.list()
+tenants = kc2.tenants.list()
 
-# logging.debug('tenants:%s' % tenants)
+logging.debug('tenants:%s' % tenants)
+logging.debug('tenants:%s' % tenants)
 # logging.debug('tenants:%s' % [t.name for t in tenants])
 
-test1tenant = [x for x in tenants if x.name=='test4'][0]
+# test1tenant = [x for x in tenants if x.name=='test4'][0]
 # logging.debug('test1tenant:%s' % test1tenant.id)
 
 # testuser1 = kc.users.create(name='testuser4', password='testing',
@@ -39,18 +41,18 @@ users = kc.users.list()
 testuser1 = [x for x in users if x.name=='testuser4'][0]
 # logging.debug('testuser1:%s' % testuser1.id)
 
-roles = kc.roles.list()
+# roles = kc.roles.list()
 # logging.debug('roles:%s' % roles)
 # logging.debug('roles:%s' % [t.name for t in roles])
 
 # testrole = kc.roles.create('swifttestrole1')
-testrole = [x for x in roles if x.name=='swiftoperator'][0]
-logging.debug('testrole:%s' % testrole)
+# testrole = [x for x in roles if x.name=='swiftoperator'][0]
+# logging.debug('testrole:%s' % testrole)
 
-logging.debug('before add_user_role, \n user:%s, \n role:%s, \n tenant:%s'
-    % (testuser1, testrole, test1tenant))
+# logging.debug('before add_user_role, \n user:%s, \n role:%s, \n tenant:%s'
+#     % (testuser1, testrole, test1tenant))
 
-kc.roles.add_user_role(testuser1, testrole, tenant=test1tenant, )
+# kc.roles.add_user_role(testuser1, testrole, tenant=test1tenant, )
 
 # temporary use this to add user role
 """
@@ -60,11 +62,14 @@ curl -g -i -X PUT http://10.200.44.66:35357/v2.0/tenants/9496d2f257124344a5a985d
 # roleforuser = kc.roles.roles_for_user(testuser1, test1tenant)
 # logging.debug('roleforuser:%s' % roleforuser)
 
-# services = kc.services.list()
-# logging.debug('services:%s' % services)
-# logging.debug('services:%s' % [t.name for t in services])
-# service = [x for x in services if x.name=='swift'][0]
-# logging.debug('service:%s' % service)
+services = kc.services.list()
+logging.debug('services:%s' % services)
+logging.debug('services:%s' % [t.name for t in services])
+service = [x for x in services if x.name=='swift'][0]
+logging.debug('service:%s' % service)
+
+endpoints = kc.endpoints.list()
+logging.debug('endpoints:%s' % endpoints[0])
 
 # kc.endpoints.create(
 #      region="RegionOne", service_id=service.id,

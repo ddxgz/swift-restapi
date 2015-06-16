@@ -30,9 +30,12 @@ class AccountModel(BaseModel):
     email = CharField()
     join_date = CharField()
     account_level = IntegerField()
-    swift_tenant = CharField()
-    swift_username = CharField()
-    swift_password = CharField()
+    keystone_tenant = CharField()
+    keystone_username = CharField()
+    keystone_password = CharField()
+    # username_service, eg. tester_disk
+    disk_container = CharField()
+    keystone_info = CharField()
 
     class Meta:
         order_by = ('username',)
@@ -74,6 +77,6 @@ def test():
     logging.debug('user exists:%s'%old_user.email)
 
 
-# create_tables()
+create_tables()
 
 # test()

@@ -2,7 +2,8 @@ FROM ubuntu:14.04
 
 RUN apt-get update && apt-get install -y \
     python3 \
-    python-pip \
+    python3-dev \
+    python3-pip \
     gunicorn 
 
 # for copy requirements.txt to container

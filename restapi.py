@@ -8,7 +8,7 @@ import sys, os
 import datetime
 import logging
 
-from utils import get_temp_key, get_temp_url
+from swiftutils import get_temp_key, get_temp_url
 
 import swiftclient
 # from swiftclient import client
@@ -17,7 +17,8 @@ import peewee
 from config import Config
 from models import AccountModel, database
 from myexceptions import UserNotExistException, PasswordIncorrectException
-
+import keystonewrap
+import swiftwrap
 
 logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
     level=logging.DEBUG)
@@ -338,18 +339,38 @@ class AccountListener:
             logging.debug('in account post create')
 
             with database.atomic():
-                AccountModel.create(username=username, 
+                # AccountModel.create(username=username, 
+                #     password=password,
+                #     email=email,
+                #     join_date=str(datetime.datetime.now())+' GMT+8',
+                #     account_level=0,
+                #     swift_tenant='test',
+                #     swift_username=username,
+                #     swift_password=password)
+                new_user = AccountModel.create(username=username, 
                     password=password,
                     email=email,
                     join_date=str(datetime.datetime.now())+' GMT+8',
                     account_level=0,
-                    swift_tenant='test',
-                    swift_username=username,
-                    swift_password=password)
-            conn = swiftclient.client.Connection(self.conf.auth_url,
-                                  self.conf.account_username,
-                                  self.conf.password,
-                                  auth_version=self.conf.auth_version or 1)
+                    keystone_tenant=self.conf.account,
+                    keystone_username=self.conf.account+'_'+username,
+                    keystone_password=password,
+                    disk_container=self.conf.container,
+                    keystone_info='')
+                logging.debug('in account post create database.atomic')
+
+            # conn = swiftclient.client.Connection(self.conf.auth_url,
+            #                       self.conf.account_username,
+            #                       self.conf.password,
+            #                       auth_version=self.conf.auth_version or 1)
+            keystone_info = swiftwrap.createuser(new_user.keystone_tenant, 
+                new_user.keystone_username,
+                new_user.keystone_password, new_user.account_level)
+            logging.debug('keystone_info:%s' % keystone_info)
+            q = AccountModel.update(keystone_info=keystone_info).where(
+                AccountModel.username == username, 
+                AccountModel.password == password)
+            q.execute()
             resp_dict['info'] = 'successfully create user:%s' % username
             resp.status = falcon.HTTP_201
 
@@ -367,7 +388,6 @@ class AccountListener:
                                 AccountModel.password==password)
             except:
                 logging.debug('change user data failed...')
-
 
         resp.body = json.dumps(resp_dict, encoding='utf-8')
 
@@ -402,6 +422,8 @@ class AccountListener:
             resp_dict['email'] = user.email
             resp_dict['account_level'] = user.account_level
             resp_dict['join_date'] = user.join_date
+            resp_dict['keystone_info'] = user.keystone_info
+            
             resp.status = falcon.HTTP_200
         except UserNotExistException:
             logging.debug('in UserNotExistException')

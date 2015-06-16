@@ -28,6 +28,7 @@ class Config(object):
             self.account = config.get('swiftconf', 'account')
             self.username = config.get('swiftconf', 'username')
             self.password = config.get('swiftconf', 'password')
+            self.container = config.get('swiftconf', 'container')
             self.auth_url = ""
             if auth_ssl:
                 self.auth_url += "https://"
@@ -39,23 +40,11 @@ class Config(object):
             self.account_username = "%s:%s" % (self.account, self.username)
         else:
             self.skip_tests = True
-        if config.has_section('catchconf'):
-            self.container = config.get('catchconf', 'container')
-            self.video_dir = config.get('catchconf', 'video_dir')
-            self.shell_dir = config.get('catchconf', 'shell_dir')
-            self.upload_file = config.get('catchconf', 'upload_file')
-            uploading_interval = config.get('catchconf',
-                                                 'uploading_interval')
-            loopcount = config.get('catchconf', 'loopcount')
-            threshold_container = config.get('catchconf',
-                                                  'threshold_container')
-            self.uploading_interval = int(uploading_interval)
-            self.loopcount = int(loopcount)
-            self.threshold_container = int(threshold_container)
-            self.upload_dir = config.get('catchconf', 'upload_dir')
-            wait_for_video_sec = config.get('catchconf',
-                                                  'wait_for_video_sec')
-            self.wait_for_video_sec = int(wait_for_video_sec)
+        
+        if config.has_section('services'):
+            services_line = config.get('services', 'services')
+            service_list = services_line.split(',')
+            self.services = [i.strip() for i in service_list]
 
         if config.has_section('devsetting'):
             no_catch = config.get('devsetting', 'no_catch')
@@ -73,4 +62,7 @@ class Config(object):
             self.admin_token = config.get('keystone', 'admin_token')
             self.auth_url_v2 = config.get('keystone', 'auth_url_v2')
             self.endpoint_url_v2 = config.get('keystone', 'endpoint_url_v2')
+            self.swift_role = config.get('keystone', 'swift_role')
+            self.swift_region = config.get('keystone', 'swift_region')
+            self.swift_service = config.get('keystone', 'swift_service')
             
