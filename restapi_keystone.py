@@ -147,7 +147,7 @@ class HomeListener:
             conn = swiftclient.Connection(self.conf.auth_url,
                                   user.keystone_tenant+':'+user.keystone_username,
                                   user.password,
-                                  auth_version=self.conf.auth_version or 1)
+                                  auth_version=self.conf.auth_version)
             meta, objects = conn.get_container(self.conf.container)
             logging.debug('meta: %s,   objects: %s' % (meta, objects))
             resp_dict = {}
@@ -171,49 +171,6 @@ class HomeListener:
         resp.status = falcon.HTTP_200
         resp.body = json.dumps(resp_dict, encoding='utf-8', 
             sort_keys=True, indent=4)
-
-
-    def on_post(self, req, resp):
-        """
-        unuseful at present
-        """
-        try:
-            username = req.get_header('username') or 'un'
-            password = req.get_header('password') or 'pw'
-            logging.debug('username:%s, password:%s' % (username, password))
-        except:
-            raise falcon.HTTPBadRequest('bad req', 
-                'when read from req, please check if the req is correct.')
-        try:
-            # post_data = req.env
-            logging.debug('env:%s , \nstream:%s, \ncontext:%s, \ninput:%s' % (
-                req.env, req.stream.read(), req.context, req.env['wsgi.input'].read()))
-            # logging.debug('self.conf.auth_url: %s,   conf.auth_version: %s' % (
-            #     self.conf.auth_url, self.conf.auth_version))
-            conn = swiftclient.Connection(self.conf.auth_url,
-                                  self.conf.account_username,
-                                  self.conf.password,
-                                  auth_version=self.conf.auth_version or 1)
-            conn.put_object('disk', 'testfile', req.stream, 
-                chunk_size=65536)
-            # meta, objects = conn.get_container(self.conf.container)
-            # logging.debug('meta: %s,   objects: %s' % (meta, objects))
-            # resp_dict = {}
-            # resp_dict['meta'] = meta
-            # logging.debug('resp_dict:%s' % resp_dict)
-            # objs = {}
-            # for obj in objects:
-            #     logging.debug('obj:%s' % obj.get('name'))
-            #     objs[obj.get('name')] = obj
-            # resp_dict['objects'] = objs
-        except:
-            raise falcon.HTTPBadRequest('bad req', 
-                'username or password not correct!')
-        # resp.status = falcon.HTTP_202
-        # resp.body = json.dumps(resp_dict, encoding='utf-8', sort_keys=True, indent=4)
-
-        resp.status = falcon.HTTP_201
-        resp.body = json.dumps({}, encoding='utf-8')
 
     def on_delete(self, req, resp):
         pass
@@ -246,11 +203,15 @@ class DiskSinkAdapter(object):
 
         if req.method == 'GET':
             try:
+                user = AccountModel.auth(username, password)
+                os_options = {'tenant_name':user.keystone_tenant}
+
                 storage_url, auth_token = swiftclient.client.get_auth(
                                         self.conf.auth_url,
-                                        self.conf.account_username,
-                                      self.conf.password,
-                                      auth_version=1)
+                                  user.keystone_tenant+':'+user.keystone_username,
+                                  user.password,
+                                   os_options=os_options,
+                                      auth_version=self.conf.auth_version)
                 logging.debug('url:%s, toekn:%s' % (storage_url, auth_token))
                 temp_url = get_temp_url(storage_url, auth_token,
                                               self.conf.container, path2file)
@@ -273,11 +234,15 @@ class DiskSinkAdapter(object):
                 logging.debug('env:%s , \nstream:%s, \ncontext:, \ninput:' % (
                 req.env, req.stream.read()))
 
+                user = AccountModel.auth(username, password)
+                os_options = {'tenant_name':user.keystone_tenant}
                 storage_url, auth_token = swiftclient.client.get_auth(
                                         self.conf.auth_url,
-                                        self.conf.account_username,
-                                      self.conf.password,
-                                      auth_version=1)
+                                user.keystone_tenant+':'+user.keystone_username,
+                                  user.password,
+                                  os_options=os_options,
+                                      auth_version=self.conf.auth_version)
+                                  
       
                 logging.debug('url:%s, token:%s' % (storage_url, auth_token))
              
@@ -316,18 +281,19 @@ class DiskSinkAdapter(object):
              
                 # temp_url = get_temp_url(storage_url, auth_token,
                 #                               self.conf.container, path2file)
-                
+                user = AccountModel.auth(username, password)
+
                 conn = swiftclient.client.Connection(self.conf.auth_url,
-                                  self.conf.account_username,
-                                  self.conf.password,
-                                  auth_version=self.conf.auth_version or 1)
+                                  user.keystone_tenant+':'+user.keystone_username,
+                                  user.password,
+                                  auth_version=self.conf.auth_version)
                 meta, objects = conn.get_container(self.conf.container, 
                     prefix=path2file)
                 logging.debug('meta: %s,  \n objects: %s' % (meta, objects))
                 if objects:
                     for obj in objects:
                         conn.delete_object(self.conf.container, obj['name'])
-                    resp_dict['description'] = 'All file have been deleted'
+                    resp_dict['description'] = 'The files have been deleted'
                 else:
                     resp_dict['description'] = 'There is no file to be \
                         deleted'
@@ -464,6 +430,10 @@ class AccountListener:
             resp_dict['account_level'] = user.account_level
             resp_dict['join_date'] = user.join_date
             resp_dict['keystone_info'] = user.keystone_info
+
+            # keystone_info = swiftwrap.createuser(new_user.keystone_tenant, 
+            #     new_user.keystone_username,
+            #     new_user.keystone_password, new_user.account_level)
 
             resp.status = falcon.HTTP_200
         except UserNotExistException:

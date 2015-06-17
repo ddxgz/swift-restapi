@@ -31,7 +31,7 @@ conf = Config('swiftconf.conf')
 app = falcon.API()
 
 if conf.auth_version == "2":
-    from restapi_v2 import HomeListener, PathListener, AccountListener, \
+    from restapi_keystone import HomeListener, PathListener, AccountListener, \
         DiskSinkAdapter
 
     home_listener = HomeListener()
