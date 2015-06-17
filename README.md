@@ -1,5 +1,16 @@
 swift-webstorage-restapi
 ================
+This is REST API for wrapping Openstack Swift as a web storage, can be used by clients which do not require synchronization. 
+
+Credit to github.com/cschwede/django-swiftbrowser
+
+
+Functions
+---------------
+- Download/upload files from/to Swift
+- Share files with links
+- Provide API for clients of other platforms
+
 
 API v1:
 ---------------
@@ -49,15 +60,10 @@ TODO
 - deal with when file with prefix dir upload to swift without pseudo fold created, need to create a pseudo first. This is not a problem when used by android client
 - report keystone add_user_role bug
 
+
 BUG
 ---------------
-
-
-Functions
----------------
-- Download/upload files from/to Swift
-- Share files with links
-- Provide API for clients of other platforms
+- There are problems with python-keystoneclient's add_user_role and delete_user, used curl command instead.
 
 
 Notifications
