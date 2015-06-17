@@ -79,9 +79,9 @@ data = { 'username':'user1',
 visit.get(headers=headers)
 # visit.post(headers=headers, data=urllib.urlencode(data))
 # visit.put(suffix_url='/curl.py', headers=headers)
-# visit.put_file(filename='curl.py', suffix_url='/fold1/curl.py', headers=headers)
+# visit.put_file(filename='models.py', suffix_url='/fold1/subfold1/models.py', headers=headers)
 visit.delete(suffix_url='/fold1/curl.py', headers=headers)
-visit.get(headers=headers)
+# visit.get(headers=headers)
 
 
 # v2 account

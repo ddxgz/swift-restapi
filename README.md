@@ -34,10 +34,14 @@ API v1:
 >> return an info whether the account create success or not
 
 
+Configuration
+---------------
+Support both Swift tempauth and keystoneauth, specified by 'auth_version' in config file. '1' for tempauth and '2' for keystoneauth.
+
 
 TODO
 ---------------
-- Multi-user support, need to integrate keystone
+- ~~Multi-user support, need to integrate keystone~~
 - Verify if the request if ok, such as if the file exists when get,
 	or the path2file is a fold
 - set the temp_key expires time based on the size of target file
@@ -72,3 +76,4 @@ just docker-compose up. The port can be changed as you like in docker-compose.ym
 - Gunicorn or uWsgi
 - Falcon >= 0.3.0
 - peewee >= 2.6.1
+- curl

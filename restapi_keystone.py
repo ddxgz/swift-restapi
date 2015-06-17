@@ -16,7 +16,8 @@ import peewee
 
 from config import Config
 from models import AccountModel, database
-from myexceptions import UserNotExistException, PasswordIncorrectException
+from myexceptions import UserNotExistException, PasswordIncorrectException, \
+    KeystoneUserCreateException
 import keystonewrap
 import swiftwrap
 
@@ -66,7 +67,7 @@ class PathListener:
             logging.debug('url:%s, toekn:%s' % (storage_url, auth_token))
          
             temp_url = get_temp_url(storage_url, auth_token,
-                                          self.conf.container, path2file)
+                                          self.conf.disk_container, path2file)
             resp_dict = {}
             # resp_dict['meta'] = meta
             # objs = {}
@@ -107,28 +108,6 @@ class HomeListener:
         except:
             raise falcon.HTTPBadRequest('bad req', 
                 'when read from req, please check if the req is correct.')
-        # try:
-        #     # if path2file:
-        #     logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
-        #         self.conf.auth_url, self.conf.auth_version))
-        #     conn = swiftclient.Connection(self.conf.auth_url,
-        #                           self.conf.account_username,
-        #                           self.conf.password,
-        #                           auth_version=self.conf.auth_version or 1)
-        #     meta, objects = conn.get_container(self.conf.container)
-        #     logging.debug('meta: %s,   objects: %s' % (meta, objects))
-        #     resp_dict = {}
-        #     resp_dict['meta'] = meta
-        #     logging.debug('resp_dict:%s' % resp_dict)
-        #     objs = {}
-        #     for obj in objects:
-        #         logging.debug('obj:%s' % obj.get('name'))
-        #         objs[obj.get('name')] = obj
-        #     resp_dict['objects'] = objs
-        # except:
-        #     raise falcon.HTTPBadRequest('bad req', 
-        #         'username or password not correct!')
-
         try:
             logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
                 self.conf.auth_url, self.conf.auth_version))
@@ -148,7 +127,7 @@ class HomeListener:
                                   user.keystone_tenant+':'+user.keystone_username,
                                   user.password,
                                   auth_version=self.conf.auth_version)
-            meta, objects = conn.get_container(self.conf.container)
+            meta, objects = conn.get_container(user.disk_container)
             logging.debug('meta: %s,   objects: %s' % (meta, objects))
             resp_dict = {}
             resp_dict['meta'] = meta
@@ -214,14 +193,13 @@ class DiskSinkAdapter(object):
                                       auth_version=self.conf.auth_version)
                 logging.debug('url:%s, toekn:%s' % (storage_url, auth_token))
                 temp_url = get_temp_url(storage_url, auth_token,
-                                              self.conf.container, path2file)
+                                              user.disk_container, path2file)
                 resp_dict = {}
                 # resp_dict['meta'] = meta
                 resp_dict['temp_url'] = temp_url
                 resp_dict['path2file'] = path2file
                 resp.status = falcon.HTTP_200
                 # logging.debug('resp_dict:%s' % resp_dict)
-
             except:
                 raise falcon.HTTPBadRequest('bad req', 
                     'username or password not correct!')
@@ -242,17 +220,8 @@ class DiskSinkAdapter(object):
                                   user.password,
                                   os_options=os_options,
                                       auth_version=self.conf.auth_version)
-                                  
-      
                 logging.debug('url:%s, token:%s' % (storage_url, auth_token))
-             
-                # temp_url = get_temp_url(storage_url, auth_token,
-                #                               self.conf.container, path2file)
                 resp_dict = {}
-                # resp_dict['meta'] = meta
-                # objs = {}
-                # for obj in objects:
-                #     logging.debug('obj:%s' % obj.get('name'))
                 resp_dict['auth_token'] = auth_token
                 resp_dict['storage_url'] = storage_url + '/disk/' + path2file
                 resp.status = falcon.HTTP_201
@@ -268,48 +237,29 @@ class DiskSinkAdapter(object):
             try:
                 # if path2file:
                 logging.debug(' path2file:%s' % (path2file))
-
                 logging.debug('env:%s , \nstream:%s, \ncontext:, \ninput:' % (
                 req.env, req.stream.read()))
-
-                # storage_url, auth_token = swiftclient.client.get_auth(
-                #                         self.conf.auth_url,
-                #                         self.conf.account_username,
-                #                       self.conf.password,
-                #                       auth_version=1)
-                # logging.debug('url:%s, token:%s' % (storage_url, auth_token))
-             
-                # temp_url = get_temp_url(storage_url, auth_token,
-                #                               self.conf.container, path2file)
                 user = AccountModel.auth(username, password)
-
                 conn = swiftclient.client.Connection(self.conf.auth_url,
                                   user.keystone_tenant+':'+user.keystone_username,
                                   user.password,
                                   auth_version=self.conf.auth_version)
-                meta, objects = conn.get_container(self.conf.container, 
+                meta, objects = conn.get_container(user.disk_container, 
                     prefix=path2file)
                 logging.debug('meta: %s,  \n objects: %s' % (meta, objects))
                 if objects:
                     for obj in objects:
-                        conn.delete_object(self.conf.container, obj['name'])
+                        conn.delete_object(user.disk_container, obj['name'])
                     resp_dict['description'] = 'The files have been deleted'
                 else:
                     resp_dict['description'] = 'There is no file to be \
                         deleted'
-                # resp_dict['meta'] = meta
-                # objs = {}
-                # for obj in objects:
-                #     logging.debug('obj:%s' % obj.get('name'))
-                # resp_dict['auth_token'] = auth_token
-                # resp_dict['storage_url'] = storage_url + '/' + path2file
                 resp.status = falcon.HTTP_204
                 logging.debug('resp_dict:%s' % resp_dict)
 
             except:
                 raise falcon.HTTPBadRequest('bad req', 
                     'username or password not correct!')
-
         resp.body = json.dumps(resp_dict, encoding='utf-8', 
             sort_keys=True, indent=4)
 
@@ -360,9 +310,9 @@ class AccountListener:
                     join_date=str(datetime.datetime.now())+' GMT+8',
                     account_level=0,
                     keystone_tenant=self.conf.account,
-                    keystone_username=self.conf.account+'_'+username,
+                    keystone_username=username,
                     keystone_password=password,
-                    disk_container=self.conf.container,
+                    disk_container=username+'_'+self.conf.disk_container,
                     keystone_info='')
                 logging.debug('in account post create database.atomic')
 
@@ -372,7 +322,8 @@ class AccountListener:
             #                       auth_version=self.conf.auth_version or 1)
             keystone_info = swiftwrap.createuser(new_user.keystone_tenant, 
                 new_user.keystone_username,
-                new_user.keystone_password, new_user.account_level)
+                new_user.keystone_password, 
+                new_user.account_level)
             logging.debug('keystone_info:%s' % keystone_info)
             q = AccountModel.update(keystone_info=keystone_info).where(
                 AccountModel.username == username, 
@@ -380,7 +331,14 @@ class AccountListener:
             q.execute()
             resp_dict['info'] = 'successfully create user:%s' % username
             resp.status = falcon.HTTP_201
-
+        except KeystoneUserCreateException:
+            logging.debug('==in restapi KeystoneUserCreateException!')
+            q = AccountModel.delete().where(AccountModel.username==username, 
+                    AccountModel.password==password)
+            q.execute()
+            resp_dict['info'] = 'create user failed, did not create user:%s' % username
+            resp.status = falcon.HTTP_403
+            resp.body = json.dumps(resp_dict, encoding='utf-8')
         except peewee.IntegrityError:
             logging.debug('in account post create except')
 
@@ -460,7 +418,6 @@ class AccountListener:
         delete the account, and all the files belong to this account
         """
         pass
-
 
 
 

@@ -1,10 +1,17 @@
 FROM ubuntu:14.04
 
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3.4-dev \
+# backup old sources.list
+RUN mv /etc/apt/sources.list /etc/apt/sources.list.bk
+
+ADD sources.list /etc/apt/sources.list
+
+RUN apt-get -qqy update && apt-get install -y \
+    curl \
+    python \
+    python-dev \
     python-pip \
     gunicorn 
+
 
 # for copy requirements.txt to container
 COPY . /restapi

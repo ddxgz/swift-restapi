@@ -6,3 +6,6 @@ class UserNotExistException(Exception):
 
 class PasswordIncorrectException(Exception):
     pass
+
+class KeystoneUserCreateException(Exception):
+    pass

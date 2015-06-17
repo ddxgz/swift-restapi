@@ -66,7 +66,7 @@ class PathListener:
             logging.debug('url:%s, toekn:%s' % (storage_url, auth_token))
          
             temp_url = get_temp_url(storage_url, auth_token,
-                                          self.conf.container, path2file)
+                                          self.conf.disk_container, path2file)
             resp_dict = {}
             # resp_dict['meta'] = meta
             # objs = {}
@@ -148,7 +148,7 @@ class HomeListener:
                                   user.keystone_tenant+':'+user.keystone_username,
                                   user.password,
                                   auth_version=self.conf.auth_version or 1)
-            meta, objects = conn.get_container(self.conf.container)
+            meta, objects = conn.get_container(self.conf.disk_container)
             logging.debug('meta: %s,   objects: %s' % (meta, objects))
             resp_dict = {}
             resp_dict['meta'] = meta
@@ -253,7 +253,7 @@ class DiskSinkAdapter(object):
                                       auth_version=1)
                 logging.debug('url:%s, toekn:%s' % (storage_url, auth_token))
                 temp_url = get_temp_url(storage_url, auth_token,
-                                              self.conf.container, path2file)
+                                              self.conf.disk_container, path2file)
                 resp_dict = {}
                 # resp_dict['meta'] = meta
                 resp_dict['temp_url'] = temp_url
@@ -321,12 +321,12 @@ class DiskSinkAdapter(object):
                                   self.conf.account_username,
                                   self.conf.password,
                                   auth_version=self.conf.auth_version or 1)
-                meta, objects = conn.get_container(self.conf.container, 
+                meta, objects = conn.get_container(self.conf.disk_container, 
                     prefix=path2file)
                 logging.debug('meta: %s,  \n objects: %s' % (meta, objects))
                 if objects:
                     for obj in objects:
-                        conn.delete_object(self.conf.container, obj['name'])
+                        conn.delete_object(self.conf.disk_container, obj['name'])
                     resp_dict['description'] = 'All file have been deleted'
                 else:
                     resp_dict['description'] = 'There is no file to be \
@@ -396,7 +396,7 @@ class AccountListener:
                     keystone_tenant=self.conf.account,
                     keystone_username=self.conf.account+'_'+username,
                     keystone_password=password,
-                    disk_container=self.conf.container,
+                    disk_container=self.conf.disk_container,
                     keystone_info='')
                 logging.debug('in account post create database.atomic')
 

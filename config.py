@@ -28,7 +28,7 @@ class Config(object):
             self.account = config.get('swiftconf', 'account')
             self.username = config.get('swiftconf', 'username')
             self.password = config.get('swiftconf', 'password')
-            self.container = config.get('swiftconf', 'container')
+            self.disk_container = config.get('swiftconf', 'disk_container')
             self.auth_url = ""
             if auth_ssl:
                 self.auth_url += "https://"
