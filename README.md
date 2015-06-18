@@ -59,6 +59,8 @@ TODO
 - handling large files 
 - deal with when file with prefix dir upload to swift without pseudo fold created, need to create a pseudo first. This is not a problem when used by android client
 - report keystone add_user_role bug
+- handle fold rename and file rename
+- add ACL per container per user
 
 
 BUG

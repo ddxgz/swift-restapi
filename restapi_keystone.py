@@ -27,13 +27,14 @@ logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========',
 
 
 class PathListener:
+    """
+    unuseful at present
+    """
     def __init__(self):
         self.conf = Config('swiftconf.conf')
 
     def on_get(self, req, resp, path, thefile):
-        """
-        unuseful at present
-        """
+
         try:
             username = req.get_header('username') or 'un'
             password = req.get_header('password') or 'pw'

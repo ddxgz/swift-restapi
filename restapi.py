@@ -34,19 +34,23 @@ if conf.auth_version == "2":
     from restapi_keystone import HomeListener, PathListener, AccountListener, \
         DiskSinkAdapter
 
-    home_listener = HomeListener()
-    path_listener = PathListener()
-    account_listener = AccountListener()
-    sink = DiskSinkAdapter()
+    # home_listener = HomeListener()
+    # path_listener = PathListener()
+    # account_listener = AccountListener()
+    # sink = DiskSinkAdapter()
 elif conf.auth_version is "1":
-    home_listener = HomeListener_v1()
-    path_listener = PathListener_v1()
-    account_listener = AccountListener_v1()
-    sink = DiskSinkAdapter()
-# home_listener = HomeListener()
-# path_listener = PathListener()
-# account_listener = AccountListener()
+    from restapi_tempauth import HomeListener, PathListener, AccountListener, \
+        DiskSinkAdapter
+    # home_listener = HomeListener()
+    # path_listener = PathListener()
+    # account_listener = AccountListener()
+    # sink = DiskSinkAdapter()
 
+home_listener = HomeListener()
+path_listener = PathListener()
+account_listener = AccountListener()
+sink = DiskSinkAdapter()
+    
 # app.add_route('/v1/disk/{path}/{file}', path_listener)
 app.add_route('/v1/disk', home_listener)
 app.add_route('/v1/account', account_listener)

@@ -60,13 +60,22 @@ class Visit():
 
 
 
-# headers = { 'username':'test:tester',
-# 			'password':'testing' }
-visit = Visit('http://10.200.44.84:8090/v1/disk')
+headers = { 'username':'test:tester',
+			'password':'testing' }
+data = { 'username':'user1',
+			'password':'password1',
+			'email':'user1@email.com' }
+# visit = Visit('http://10.200.44.84:8090/v1/disk')
+visit = Visit('http://10.200.44.84:8090/v1/account')
+
 # visit.get(headers=headers)
 # visit.put(suffix_url='/curl.py', headers=headers)
 # visit.put_file(filename='curl.py', suffix_url='/fold3/curl.py', headers=headers)
 # visit.delete(suffix_url='/fold3/curl.py', headers=headers)
+
+# v1 account
+visit.post(headers=headers, data=urllib.urlencode(data))
+
 
 # v2 disk
 headers = { 'username':'testuser7',
@@ -76,11 +85,11 @@ data = { 'username':'user1',
 			'password':'password1',
 			'email':'user1@email.com' }
 # visit = Visit('http://10.200.44.84:8090/v1/account')
-visit.get(headers=headers)
-# visit.post(headers=headers, data=urllib.urlencode(data))
-# visit.put(suffix_url='/curl.py', headers=headers)
-# visit.put_file(filename='models.py', suffix_url='/fold1/subfold1/models.py', headers=headers)
-visit.delete(suffix_url='/fold1/curl.py', headers=headers)
+# visit.get(headers=headers)
+# # visit.post(headers=headers, data=urllib.urlencode(data))
+# # visit.put(suffix_url='/curl.py', headers=headers)
+# # visit.put_file(filename='models.py', suffix_url='/fold1/subfold1/models.py', headers=headers)
+# visit.delete(suffix_url='/fold1/curl.py', headers=headers)
 # visit.get(headers=headers)
 
 

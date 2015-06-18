@@ -107,48 +107,16 @@ class HomeListener:
         except:
             raise falcon.HTTPBadRequest('bad req', 
                 'when read from req, please check if the req is correct.')
-        # try:
-        #     # if path2file:
-        #     logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
-        #         self.conf.auth_url, self.conf.auth_version))
-        #     conn = swiftclient.Connection(self.conf.auth_url,
-        #                           self.conf.account_username,
-        #                           self.conf.password,
-        #                           auth_version=self.conf.auth_version or 1)
-        #     meta, objects = conn.get_container(self.conf.container)
-        #     logging.debug('meta: %s,   objects: %s' % (meta, objects))
-        #     resp_dict = {}
-        #     resp_dict['meta'] = meta
-        #     logging.debug('resp_dict:%s' % resp_dict)
-        #     objs = {}
-        #     for obj in objects:
-        #         logging.debug('obj:%s' % obj.get('name'))
-        #         objs[obj.get('name')] = obj
-        #     resp_dict['objects'] = objs
-        # except:
-        #     raise falcon.HTTPBadRequest('bad req', 
-        #         'username or password not correct!')
-
         try:
+            # if path2file:
             logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
                 self.conf.auth_url, self.conf.auth_version))
-            # user = AccountModel.get(AccountModel.username==username, 
-            #                             AccountModel.password==password)
-            user = AccountModel.auth(username, password)
-            # logging.debug('1st resp_dict:%s' % resp_dict)
-
-            resp_dict['info'] = 'successfully get user:%s' % username
-            resp_dict['username'] = user.username
-            resp_dict['email'] = user.email
-            resp_dict['account_level'] = user.account_level
-            resp_dict['join_date'] = user.join_date
-            resp_dict['keystone_info'] = user.keystone_info
-            logging.debug('1st resp_dict:%s' % resp_dict)
             conn = swiftclient.Connection(self.conf.auth_url,
-                                  user.keystone_tenant+':'+user.keystone_username,
-                                  user.password,
-                                  auth_version=self.conf.auth_version or 1)
-            meta, objects = conn.get_container(self.conf.disk_container)
+                                  self.conf.account_username,
+                                  self.conf.password,
+                                  auth_version=self.conf.auth_version)
+            meta, objects = conn.get_container(username+'_'+
+                self.conf.container)
             logging.debug('meta: %s,   objects: %s' % (meta, objects))
             resp_dict = {}
             resp_dict['meta'] = meta
@@ -157,16 +125,49 @@ class HomeListener:
             for obj in objects:
                 logging.debug('obj:%s' % obj.get('name'))
                 objs[obj.get('name')] = obj
-            resp_dict['objects'] = objs        
-        except UserNotExistException:
-            logging.debug('in UserNotExistException')
+            resp_dict['objects'] = objs
+        except:
+            raise falcon.HTTPBadRequest('bad req', 
+                'username or password not correct!')
 
-            resp_dict['info'] = 'user:%s does not exist' % username
-            resp.body = json.dumps(resp_dict, encoding='utf-8')
-        except PasswordIncorrectException:
-            logging.debug('in PasswordIncorrectException')
-            resp_dict['info'] = 'user:%s password not correct' % username
-            resp.body = json.dumps(resp_dict, encoding='utf-8')
+        # try:
+        #     logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
+        #         self.conf.auth_url, self.conf.auth_version))
+        #     # user = AccountModel.get(AccountModel.username==username, 
+        #     #                             AccountModel.password==password)
+        #     user = AccountModel.auth(username, password)
+        #     # logging.debug('1st resp_dict:%s' % resp_dict)
+
+        #     resp_dict['info'] = 'successfully get user:%s' % username
+        #     resp_dict['username'] = user.username
+        #     resp_dict['email'] = user.email
+        #     resp_dict['account_level'] = user.account_level
+        #     resp_dict['join_date'] = user.join_date
+        #     resp_dict['keystone_info'] = user.keystone_info
+        #     logging.debug('1st resp_dict:%s' % resp_dict)
+        #     conn = swiftclient.Connection(self.conf.auth_url,
+        #                           user.keystone_tenant+':'+user.keystone_username,
+        #                           user.password,
+        #                           auth_version=self.conf.auth_version or 1)
+        #     meta, objects = conn.get_container(self.conf.disk_container)
+        #     logging.debug('meta: %s,   objects: %s' % (meta, objects))
+        #     resp_dict = {}
+        #     resp_dict['meta'] = meta
+        #     logging.debug('resp_dict:%s' % resp_dict)
+        #     objs = {}
+        #     for obj in objects:
+        #         logging.debug('obj:%s' % obj.get('name'))
+        #         objs[obj.get('name')] = obj
+        #     resp_dict['objects'] = objs        
+        # except UserNotExistException:
+        #     logging.debug('in UserNotExistException')
+
+        #     resp_dict['info'] = 'user:%s does not exist' % username
+        #     resp.body = json.dumps(resp_dict, encoding='utf-8')
+        # except PasswordIncorrectException:
+        #     logging.debug('in PasswordIncorrectException')
+        #     resp_dict['info'] = 'user:%s password not correct' % username
+        #     resp.body = json.dumps(resp_dict, encoding='utf-8')
         
         resp.status = falcon.HTTP_200
         resp.body = json.dumps(resp_dict, encoding='utf-8', 
@@ -253,7 +254,8 @@ class DiskSinkAdapter(object):
                                       auth_version=1)
                 logging.debug('url:%s, toekn:%s' % (storage_url, auth_token))
                 temp_url = get_temp_url(storage_url, auth_token,
-                                              self.conf.disk_container, path2file)
+                                    username+'_'+self.conf.disk_container, 
+                                    path2file)
                 resp_dict = {}
                 # resp_dict['meta'] = meta
                 resp_dict['temp_url'] = temp_url
@@ -277,7 +279,7 @@ class DiskSinkAdapter(object):
                                         self.conf.auth_url,
                                         self.conf.account_username,
                                       self.conf.password,
-                                      auth_version=1)
+                                      auth_version=self.conf.auth_version)
       
                 logging.debug('url:%s, token:%s' % (storage_url, auth_token))
              
@@ -289,7 +291,8 @@ class DiskSinkAdapter(object):
                 # for obj in objects:
                 #     logging.debug('obj:%s' % obj.get('name'))
                 resp_dict['auth_token'] = auth_token
-                resp_dict['storage_url'] = storage_url + '/disk/' + path2file
+                resp_dict['storage_url'] = storage_url + \
+                    +'/'+username+'_'+self.conf.disk_container + path2file
                 resp.status = falcon.HTTP_201
                 logging.debug('resp_dict:%s' % resp_dict)
 
@@ -320,13 +323,16 @@ class DiskSinkAdapter(object):
                 conn = swiftclient.client.Connection(self.conf.auth_url,
                                   self.conf.account_username,
                                   self.conf.password,
-                                  auth_version=self.conf.auth_version or 1)
-                meta, objects = conn.get_container(self.conf.disk_container, 
+                                  auth_version=self.conf.auth_version)
+                meta, objects = conn.get_container(
+                    username+'_'+self.conf.disk_container, 
                     prefix=path2file)
                 logging.debug('meta: %s,  \n objects: %s' % (meta, objects))
                 if objects:
                     for obj in objects:
-                        conn.delete_object(self.conf.disk_container, obj['name'])
+                        conn.delete_object(
+                            username+'_'+self.conf.disk_container, 
+                            obj['name'])
                     resp_dict['description'] = 'All file have been deleted'
                 else:
                     resp_dict['description'] = 'There is no file to be \
@@ -379,57 +385,17 @@ class AccountListener:
         try:
             logging.debug('in account post create')
 
-            with database.atomic():
-                # AccountModel.create(username=username, 
-                #     password=password,
-                #     email=email,
-                #     join_date=str(datetime.datetime.now())+' GMT+8',
-                #     account_level=0,
-                #     swift_tenant='test',
-                #     swift_username=username,
-                #     swift_password=password)
-                new_user = AccountModel.create(username=username, 
-                    password=password,
-                    email=email,
-                    join_date=str(datetime.datetime.now())+' GMT+8',
-                    account_level=0,
-                    keystone_tenant=self.conf.account,
-                    keystone_username=self.conf.account+'_'+username,
-                    keystone_password=password,
-                    disk_container=self.conf.disk_container,
-                    keystone_info='')
-                logging.debug('in account post create database.atomic')
 
-            # conn = swiftclient.client.Connection(self.conf.auth_url,
-            #                       self.conf.account_username,
-            #                       self.conf.password,
-            #                       auth_version=self.conf.auth_version or 1)
-            keystone_info = swiftwrap.createuser(new_user.keystone_tenant, 
-                new_user.keystone_username,
-                new_user.keystone_password, new_user.account_level)
-            logging.debug('keystone_info:%s' % keystone_info)
-            q = AccountModel.update(keystone_info=keystone_info).where(
-                AccountModel.username == username, 
-                AccountModel.password == password)
-            q.execute()
+            conn = swiftclient.client.Connection(self.conf.auth_url,
+                                  self.conf.account_username,
+                                  self.conf.password,
+                                  auth_version=self.conf.auth_version)
+            conn.put_container(username+'_'+self.conf.disk_container)
             resp_dict['info'] = 'successfully create user:%s' % username
             resp.status = falcon.HTTP_201
-
-        except peewee.IntegrityError:
-            logging.debug('in account post create except')
-
-            # `username` is a unique column, so this username already exists,
-            # making it safe to call .get().
-            old_user = AccountModel.get(AccountModel.username == username)
-            logging.debug('user exists...')
-            resp_dict['info'] = 'user exists, did not create user:%s' % username
-            resp.status = falcon.HTTP_403
-            try:
-                change_user = AccountModel.get(AccountModel.username==username, 
-                                AccountModel.password==password)
-            except:
-                logging.debug('change user data failed...')
-
+        except:
+            raise falcon.HTTPBadRequest('bad req', 
+                'when access to Swift.')
         resp.body = json.dumps(resp_dict, encoding='utf-8')
 
     def on_get(self, req, resp):
@@ -453,17 +419,15 @@ class AccountListener:
         
         try:
             logging.debug('in account model get')
-
-            # user = AccountModel.get(AccountModel.username==username, 
-            #                             AccountModel.password==password)
-            user = AccountModel.auth(username, password)
-
-            resp_dict['info'] = 'successfully get user:%s' % username
-            resp_dict['username'] = user.username
-            resp_dict['email'] = user.email
-            resp_dict['account_level'] = user.account_level
-            resp_dict['join_date'] = user.join_date
-            resp_dict['keystone_info'] = user.keystone_info
+            conn = swiftclient.client.Connection(self.conf.auth_url,
+                                  self.conf.account_username,
+                                  self.conf.password,
+                                  auth_version=self.conf.auth_version)
+            meta, objects = conn.get_container(username+'_'+
+                self.conf.container)
+            logging.debug('meta: %s,   ' % (meta))
+            resp_dict = {}
+            resp_dict['meta'] = meta
 
             resp.status = falcon.HTTP_200
         except UserNotExistException:
@@ -471,10 +435,7 @@ class AccountListener:
 
             resp_dict['info'] = 'user:%s does not exist' % username
             resp.body = json.dumps(resp_dict, encoding='utf-8')
-        except PasswordIncorrectException:
-            logging.debug('in PasswordIncorrectException')
-            resp_dict['info'] = 'user:%s password not correct' % username
-            resp.body = json.dumps(resp_dict, encoding='utf-8')
+
         # except:
         #     # `username` is a unique column, so this username already exists,
         #     # making it safe to call .get().
