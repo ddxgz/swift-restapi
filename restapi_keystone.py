@@ -7,6 +7,7 @@ import Queue
 import sys, os
 import datetime
 import logging
+import ast
 
 from swiftutils import get_temp_key, get_temp_url
 
@@ -20,6 +21,7 @@ from myexceptions import UserNotExistException, PasswordIncorrectException, \
     KeystoneUserCreateException
 import keystonewrap
 import swiftwrap
+from utils import pretty_logging, list_with_key
 
 logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
     level=logging.DEBUG)
@@ -152,6 +154,102 @@ class HomeListener:
         resp.body = json.dumps(resp_dict, encoding='utf-8', 
             sort_keys=True, indent=4)
 
+    def on_post(self, req, resp):
+        """
+        :param req.header.username: the username, should be tenant:user when dev
+        :param req.header.password: password 
+
+        :returns: a json contains the successfully changed files
+        """
+        resp_dict = {}
+        try:
+            username = req.get_header('username') or 'un'
+            password = req.get_header('password') or 'pw'
+            logging.debug('in home post, username:%s, password:%s' % (username, password))
+        except:
+            raise falcon.HTTPBadRequest('bad req', 
+                'when read from req, please check if the req is correct.')
+        try:
+            # logging.debug('env:%s , \nstream:%s, \ncontext:%s, \ninput:%s, \n\
+            #     params: %s ' % (
+            #     req.env, req.stream.read(), req.context, 
+            #     req.env['wsgi.input'], req.params.get))
+     
+            logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
+                self.conf.auth_url, self.conf.auth_version))
+
+            update_list = ast.literal_eval(req.params.get('disk'))
+            pretty_logging({'update_list':update_list})
+            move_list = []
+            copy_list = []
+            move_list = list_with_key(update_list, 'move')
+            copy_list = list_with_key(update_list, 'copy')
+   
+            # if len(update_list) > 0:
+            #     for pair in update_list:
+            #         # pretty_logging(pair)
+            #         pretty_logging(move_list, 'movelist')
+            #         pretty_logging(copy_list, 'copylist')
+            # else:
+            #     pretty_logging({}, 'no files in update_list!')
+
+            user = AccountModel.auth(username, password)
+            pretty_logging({'tenent:':user.keystone_tenant,
+                'username':user.username,
+                'disk_container':user.disk_container})
+            if len(move_list) > 0:
+                for pair in move_list:
+                    # pretty_logging(pair)
+                    pretty_logging(pair, 'movelist')
+                    swiftwrap.move_object(user.keystone_tenant,
+                                    user.keystone_username,
+                                    user.password,
+                                    user.disk_container,
+                                    pair.get('from'),
+                                    pair.get('move'))
+            else:
+                pretty_logging({}, 'no files in update_list!')
+
+
+            if len(copy_list) > 0:
+                for pair in copy_list:
+                    # pretty_logging(pair)
+                    pretty_logging(pair, 'copylist')
+                    swiftwrap.copy_object(user.keystone_tenant,
+                                    user.keystone_username,
+                                    user.password,
+                                    user.disk_container,
+                                    pair.get('from'),
+                                    pair.get('copy'))
+            else:
+                pretty_logging({}, 'no files in update_list!')
+
+            # user = AccountModel.get(AccountModel.username==username, 
+            #                             AccountModel.password==password)
+            logging.debug('1st resp_dict:%s' % resp_dict)
+
+            resp_dict['info'] = 'successfully get user:%s' % username
+            resp_dict['username'] = user.username
+            resp_dict['email'] = user.email
+            resp_dict['account_level'] = user.account_level
+            resp_dict['join_date'] = user.join_date
+            resp_dict['keystone_info'] = user.keystone_info
+            logging.debug('2nd resp_dict:%s' % resp_dict)
+     
+        except UserNotExistException:
+            logging.debug('in UserNotExistException')
+
+            resp_dict['info'] = 'user:%s does not exist' % username
+            resp.body = json.dumps(resp_dict, encoding='utf-8')
+        except PasswordIncorrectException:
+            logging.debug('in PasswordIncorrectException')
+            resp_dict['info'] = 'user:%s password not correct' % username
+            resp.body = json.dumps(resp_dict, encoding='utf-8')
+        
+        resp.status = falcon.HTTP_200
+        resp.body = json.dumps(resp_dict, encoding='utf-8', 
+            sort_keys=True, indent=4)
+
     def on_delete(self, req, resp):
         pass
 
@@ -224,7 +322,8 @@ class DiskSinkAdapter(object):
                 logging.debug('url:%s, token:%s' % (storage_url, auth_token))
                 resp_dict = {}
                 resp_dict['auth_token'] = auth_token
-                resp_dict['storage_url'] = storage_url + '/disk/' + path2file
+                resp_dict['storage_url'] = storage_url + '/' + \
+                    user.disk_container + '/' + path2file
                 resp.status = falcon.HTTP_201
                 logging.debug('resp_dict:%s' % resp_dict)
 
@@ -269,7 +368,7 @@ class AccountListener:
     def __init__(self):
         self.conf = Config('swiftconf.conf')
 
-    def on_post(self, req, resp):
+    def on_put(self, req, resp):
         """
         :param req.header.username: the username
         :param req.header.password: password 
@@ -278,7 +377,7 @@ class AccountListener:
         :returns: a json contains info of the operation, if the register is
             success or failed
         """
-        logging.debug('in account post')
+        logging.debug('in account put')
         resp_dict = {}
 
         try:
@@ -294,7 +393,7 @@ class AccountListener:
                 'when read from req, please check if the req is correct.')
         
         try:
-            logging.debug('in account post create')
+            logging.debug('in account put create')
 
             with database.atomic():
                 # AccountModel.create(username=username, 
@@ -315,7 +414,7 @@ class AccountListener:
                     keystone_password=password,
                     disk_container=username+'_'+self.conf.disk_container,
                     keystone_info='')
-                logging.debug('in account post create database.atomic')
+                logging.debug('in account put create database.atomic')
 
             # conn = swiftclient.client.Connection(self.conf.auth_url,
             #                       self.conf.account_username,
@@ -341,7 +440,7 @@ class AccountListener:
             resp.status = falcon.HTTP_403
             resp.body = json.dumps(resp_dict, encoding='utf-8')
         except peewee.IntegrityError:
-            logging.debug('in account post create except')
+            logging.debug('in account put create except')
 
             # `username` is a unique column, so this username already exists,
             # making it safe to call .get().
@@ -354,7 +453,6 @@ class AccountListener:
                                 AccountModel.password==password)
             except:
                 logging.debug('change user data failed...')
-
         resp.body = json.dumps(resp_dict, encoding='utf-8')
 
     def on_get(self, req, resp):

@@ -104,3 +104,13 @@ def print_list(objs, fields, formatters={}, order_by=None):
     #     encoded = encoded.decode()
     # print(encoded)
     print(pt)
+
+
+def list_with_key(dict_list, key):
+    target_list = []
+    for adict in dict_list:
+        pretty_logging(adict,'in list_with_key, adict.keys:%s'%adict.keys())
+        if key in adict.keys():
+            pretty_logging({'key':key})
+            target_list.append(adict)
+    return target_list

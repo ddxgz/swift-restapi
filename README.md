@@ -40,7 +40,7 @@ API v1:
 >> return a json contains info of the user account
 
 
-#####POST
+#####PUT
 > /v1/account/
 >> return an info whether the account create success or not
 
@@ -59,7 +59,7 @@ TODO
 - handling large files 
 - deal with when file with prefix dir upload to swift without pseudo fold created, need to create a pseudo first. This is not a problem when used by android client
 - report keystone add_user_role bug
-- handle fold rename and file rename
+- handle fold rename and file rename by X-Copy-From header
 - add ACL per container per user
 
 

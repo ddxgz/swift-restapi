@@ -32,13 +32,34 @@ def createuser(swift_tenant, username, password, account_level):
         raise
 
 
-def put_container(swift_tenant, username, password, container):
+def put_container(tenant, username, password, container):
     logging.debug('swift_tenant:')
 
     conn = swiftclient.Connection(conf.auth_url,
-                                  swift_tenant+':'+username,
+                                  tenant+':'+username,
                                   password,
-                                  auth_version=2)
+                                  auth_version=conf.auth_version)
     conn.put_container(container)
+
+
+def move_object(tenant, username, password, container, source, dest):
+
+    copy_object(tenant, username, password, container, source, dest)
+    conn = swiftclient.Connection(conf.auth_url,
+                                  tenant+':'+username,
+                                  password,
+                                  auth_version=conf.auth_version)
+    conn.delete_object(container, source)
+
+
+def copy_object(tenant, username, password, container, source, dest):
+    headers = {}
+    conn = swiftclient.Connection(conf.auth_url,
+                                  tenant+':'+username,
+                                  password,
+                                  auth_version=conf.auth_version)
+    headers['X-Copy-From'] = '/' + container + '/' + source
+    headers['Content-Length'] = 0
+    conn.put_object(container, dest, headers)
 
 # createuser(conf.account, 'tester402', 'testing', 0)

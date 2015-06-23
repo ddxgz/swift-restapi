@@ -69,7 +69,7 @@ def main():
     #   sys.exit(1)
 
 if __name__ == '__main__':
-    puturl='http://10.200.46.211:8080/v1/AUTH_test/disk/b.py?temp_url_sig=84f8a72c332bc47eb3dd0b9bedc24f8cc481e239&temp_url_expires=1433733460'
+    # puturl='http://10.200.46.211:8080/v1/AUTH_test/disk/b.py?temp_url_sig=84f8a72c332bc47eb3dd0b9bedc24f8cc481e239&temp_url_expires=1433733460'
     # stat = commands.getoutput('curl -i http://10.200.46.211:8080/v1/AUTH_test/disk/swiftconf.conf -X POST \
     #    -F max_file_size=5373952000 -F max_file_count=1 -F expires=1433733751 \
     #    -F signature=9c0f7ac2d6bb5a32371e0087980d517430ef8127 \
@@ -97,10 +97,22 @@ if __name__ == '__main__':
     #     http://10.200.46.66:8080/v1/AUTH_50a19616498c4d7da572d57bce20511e/disk/curl.py')
     # logging.debug('put stat:%s' % stat)
 
+    stat = commands.getoutput('curl -i -X GET \
+        -H "Accept: application/json" -H "Content-Type: application/json"\
+        -H "X-Storage-User:storage:storage_testuser7" -H "X-Storage-Pass:testing"\
+        http://10.200.44.66:5000/v2.0 ')
+    logging.debug('put stat:%s' % stat)
 
-    aaa = commands.getoutput('curl \
-        http://10.200.46.66:5000/v3.0')
-    logging.debug('aaa stat:%s' % aaa)
+    stat = commands.getoutput('curl -X PUT \
+        -H "X-Auth-Token: AUTH_tk6df905287812441f8bbc4e8aac4e31b2" \
+        -H "X-Copy-From: /testuser7_disk/fold1/subfold1/models.py" \
+        -H "Content-Length: 0" \
+        http://10.200.46.211:8080/v1/AUTH_test/testuser7_disk/pics2/new2.png')
+    logging.debug('put stat:%s' % stat)
+
+    # aaa = commands.getoutput('curl \
+    #     http://10.200.46.66:5000/v3.0')
+    # logging.debug('aaa stat:%s' % aaa)
 
     # main()
     # print(str(datetime.datetime.now())+' GMT+8')
