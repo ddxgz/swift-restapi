@@ -61,8 +61,9 @@ app.add_sink(sink, r'^/v1/disk/(?P<path2file>.+?)$')
 
 ## Useful for debugging problems in your API; works with pdb.set_trace()
 # if __name__ == '__main__':
-#     httpd = simple_server.make_server('127.0.0.1', 8008, app)
-#     httpd.serve_forever()
+def runserver():
+    httpd = simple_server.make_server('127.0.0.1', 9803, app)
+    httpd.serve_forever()
 
 # conf = Config('swiftconf.conf')
 # conn = swiftclient.Connection(conf.auth_url,

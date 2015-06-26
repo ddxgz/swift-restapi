@@ -112,27 +112,31 @@ data = { 'disk': [
                 }
             ]
         }
-# visit = Visit('http://10.200.43.176:8888/v1/account')
-visit = Visit('http://10.200.44.84:8090/v1/disk')
-visit.get(headers=headers)
+# visit = Visit('http://10.200.43.176:8888/v1/disk')
+# visit = Visit('http://10.200.44.84:8090/v1/disk')
+# visit = Visit('http://127.0.0.1:9803/v1/disk')
+# visit.get(headers=headers)
+# visit.get(headers=headers, suffix_url='/pics/')
 # # # visit.put(suffix_url='/curl.py', headers=headers)
-visit.put_file(filename='models.py', suffix_url='/fold1/subfold1/models.py', headers=headers)
-visit.put_file(filename='curl.py', suffix_url='/fold1/subfold2/curl.py', headers=headers)
-visit.put_file(filename='config.py', suffix_url='/config.py', headers=headers)
+# visit.put_file(filename='models.py', suffix_url='/fold1/subfold1/models.py', headers=headers)
+# visit.put_file(filename='curl.py', suffix_url='/fold1/subfold2/curl.py', headers=headers)
+# visit.put_file(filename='config.py', suffix_url='/config.py', headers=headers)
 # visit.delete(suffix_url='/fold1/curl.py', headers=headers)
-visit.post(headers=headers, data=urllib.urlencode(data))
-visit.get(headers=headers)
+# visit.post(headers=headers, data=urllib.urlencode(data))
+# visit.get(headers=headers)
 
 
 # v2 account
-headers = { 'username':'testuser7',
+headers = { 'username':'tester3434',
             'password':'testing',
             'email':'user2@email.com' }
 data = { 'email': {
             'from':'password1',
             'to':'user1@email.com' }
         }
-visit = Visit('http://10.200.44.84:8090/v1/account')
+# visit = Visit('http://10.200.44.84:8090/v1/account')
+# visit = Visit('http://127.0.0.1:9803/v1/account')
+
 # visit.get(headers=headers)
 # visit.put(headers=headers, data=urllib.urlencode(data))
 # visit.post(headers=headers, data=urllib.urlencode(data))

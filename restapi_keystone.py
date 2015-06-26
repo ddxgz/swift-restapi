@@ -291,12 +291,24 @@ class DiskSinkAdapter(object):
                                    os_options=os_options,
                                       auth_version=self.conf.auth_version)
                 logging.debug('url:%s, toekn:%s' % (storage_url, auth_token))
-                temp_url = get_temp_url(storage_url, auth_token,
-                                              user.disk_container, path2file)
-                resp_dict = {}
-                # resp_dict['meta'] = meta
-                resp_dict['temp_url'] = temp_url
-                resp_dict['path2file'] = path2file
+                if path2file[-1] is '/':
+                    meta, objects = conn.get_container(user.disk_container)
+                    logging.debug('meta: %s,   objects: %s' % (meta, objects))
+                    resp_dict = {}
+                    resp_dict['meta'] = meta
+                    logging.debug('resp_dict:%s' % resp_dict)
+                    objs = {}
+                    for obj in objects:
+                        logging.debug('obj:%s' % obj.get('name'))
+                        objs[obj.get('name')] = obj
+                    resp_dict['objects'] = objs
+                else:
+                    temp_url = get_temp_url(storage_url, auth_token,
+                                                  user.disk_container, path2file)
+                    resp_dict = {}
+                    # resp_dict['meta'] = meta
+                    resp_dict['temp_url'] = temp_url
+                    resp_dict['path2file'] = path2file
                 resp.status = falcon.HTTP_200
                 # logging.debug('resp_dict:%s' % resp_dict)
             except:
@@ -487,6 +499,8 @@ class AccountListener:
             resp_dict['account_level'] = user.account_level
             resp_dict['join_date'] = user.join_date
             resp_dict['keystone_info'] = user.keystone_info
+            resp_dict['disk_container'] = user.disk_container
+            resp_dict['auth'] = 1
 
             # keystone_info = swiftwrap.createuser(new_user.keystone_tenant, 
             #     new_user.keystone_username,
@@ -497,10 +511,12 @@ class AccountListener:
             logging.debug('in UserNotExistException')
 
             resp_dict['info'] = 'user:%s does not exist' % username
+            resp_dict['auth'] = 0
             resp.body = json.dumps(resp_dict, encoding='utf-8')
         except PasswordIncorrectException:
             logging.debug('in PasswordIncorrectException')
             resp_dict['info'] = 'user:%s password not correct' % username
+            resp_dict['auth'] = 0
             resp.body = json.dumps(resp_dict, encoding='utf-8')
         # except:
         #     # `username` is a unique column, so this username already exists,

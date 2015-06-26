@@ -13,17 +13,10 @@ class RESTApiTest(unittest.TestCase):
 
     All calls using python-swiftclient.clients are replaced using mock """
 
-    def test_get(self):
-        swiftclient.client.get_account = mock.Mock(
-            return_value=[{}, []],
-            side_effect=swiftclient.client.ClientException(''))
+    def test_get_home(self):
 
-        resp = self.client.get(reverse('containerview'))
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'],
                          'http://testserver' + reverse('login'))
 
-        swiftclient.client.get_account = mock.Mock(return_value=[{}, []])
-
-        resp = self.client.get(reverse('containerview'))
         self.assertEqual(resp.context['containers'], [])

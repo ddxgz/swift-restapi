@@ -24,6 +24,7 @@ class Config(object):
             auth_port = config.getint('swiftconf', 'auth_port')
             auth_ssl = config.getboolean('swiftconf', 'auth_ssl')
             auth_prefix = config.get('swiftconf', 'auth_prefix')
+            self.auth_host = auth_host
             self.auth_version = config.get('swiftconf', 'auth_version')
             self.account = config.get('swiftconf', 'account')
             self.username = config.get('swiftconf', 'username')

@@ -30,7 +30,7 @@ def createuser(swift_tenant, username, password):
             description='%s tenant' % swift_tenant, 
             enabled=True)
         services = admin.services.list()
-        # logging.debug('services:%s' % services)
+        logging.debug('services:%s' % services)
         # logging.debug('=======services:%s' % [t.name for t in services])
         service = [x for x in services if x.name==conf.swift_service][0]
         # logging.debug('service:%s' % service)
@@ -39,9 +39,12 @@ def createuser(swift_tenant, username, password):
 
         admin.endpoints.create(
              region=conf.swift_region, service_id=service.id,
-            publicurl="http://10.200.44.66:8080/v1/AUTH_%s" % tenant.id,
-            internalurl="http://10.200.44.66:8080/v1/AUTH_%s" % tenant.id,
-            adminurl="http://10.200.44.66:5000/v2.0")
+            publicurl="http://%s:8080/v1/AUTH_%s" % 
+                (conf.auth_host, tenant.id),
+            internalurl="http://%s:8080/v1/AUTH_%s" % 
+                (conf.auth_host, tenant.id),
+            adminurl="http://%s:5000/v2.0" % conf.auth_host)
+        logging.debug('after create endpoints!:')
     else:
         tenant = [x for x in tenants if x.name==swift_tenant][0]
     # logging.debug('tenant:%s' % tenant.id)
@@ -71,7 +74,7 @@ def createuser(swift_tenant, username, password):
     endpoints = admin.endpoints.list()
     logging.debug('%s, endpoints:%s' % (len(endpoints), endpoints[0]))
     endpoint = [x.publicurl for x in endpoints \
-        if x.publicurl=="http://10.200.44.66:8080/v1/AUTH_%s" % tenant.id][0]
+        if x.publicurl=="http://%s:8080/v1/AUTH_%s" % (conf.auth_host, tenant.id)][0]
 
     roleforuser = admin.roles.roles_for_user(user, tenant)
     logging.debug('roleforuser:%s, conf.swift_role:%s' % (roleforuser,
@@ -117,4 +120,72 @@ def temp_delete_user(user):
     stat = commands.getoutput(curlstr)
     logging.debug('temp_add_user_role stat:%s' % stat)
 
+
+def create_service(service_name='swift', service_type='object-store', 
+    description='Swift service'):
+    """
+    create service for init 
+    """
+    # create tenant, user, role, endpoint
+    admin = client.Client(token=conf.admin_token,
+                            endpoint=conf.endpoint_url_v2, debug=True)
+
+    services = admin.services.list()
+    # logging.debug('services:%s' % services)
+    # logging.debug('services:%s' % [t.name for t in services])
+    servicenames = [x.name for x in services]
+
+    if service_name not in servicenames:       
+        service = admin.services.create(name=service_name, 
+            service_type=service_type,
+            description=description)
+        services = admin.services.list()
+        logging.debug('services:%s' % services)
+        # logging.debug('=======services:%s' % [t.name for t in services])
+        # service = [x for x in services if x.name==conf.swift_service][0]
+        # logging.debug('service:%s' % service)
+        # endpoints = admin.endpoints.list()
+        # logging.debug('endpoints:%s' % endpoints[0])
+        # admin.services.create(service_name, service_type, description)
+        # admin.endpoints.create(
+        #      region=conf.swift_region, service_id=service.id,
+        #     publicurl="http://10.200.44.66:8080/v1/AUTH_%s" % tenant.id,
+        #     internalurl="http://10.200.44.66:8080/v1/AUTH_%s" % tenant.id,
+        #     adminurl="http://10.200.44.66:5000/v2.0")
+    else:
+        logging.info('service: %s already exists, not need to create.' % 
+            service_name)
+
+
+def create_role(role_name):
+    """
+    create role for init 
+    """
+    # create tenant, user, role, endpoint
+    admin = client.Client(token=conf.admin_token,
+                            endpoint=conf.endpoint_url_v2, debug=True)
+
+    roles = admin.roles.list()
+    # logging.debug('services:%s' % services)
+    # logging.debug('services:%s' % [t.name for t in services])
+    rolenames = [x.name for x in roles]
+
+    if role_name not in rolenames:       
+        role = admin.roles.create(name=role_name)
+        roles = admin.roles.list()
+        logging.debug('roles:%s' % roles)
+        # logging.debug('=======services:%s' % [t.name for t in services])
+        # service = [x for x in services if x.name==conf.swift_service][0]
+        # logging.debug('service:%s' % service)
+        # endpoints = admin.endpoints.list()
+        # logging.debug('endpoints:%s' % endpoints[0])
+        # admin.services.create(service_name, service_type, description)
+        # admin.endpoints.create(
+        #      region=conf.swift_region, service_id=service.id,
+        #     publicurl="http://10.200.44.66:8080/v1/AUTH_%s" % tenant.id,
+        #     internalurl="http://10.200.44.66:8080/v1/AUTH_%s" % tenant.id,
+        #     adminurl="http://10.200.44.66:5000/v2.0")
+    else:
+        logging.info('role: %s already exists, not need to create.' % 
+            role_name)
 # createuser(conf.account, 'tester402', 'testing')
