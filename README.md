@@ -23,6 +23,7 @@ API v1:
 
 > /v1/disk/{path2file or path}
 >> return a tempo_url which can download the file
+>>> if request a dir, put the path in the header 'dir'
 
 #####PUT
 

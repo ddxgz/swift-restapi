@@ -271,9 +271,12 @@ class DiskSinkAdapter(object):
         """
         logging.debug('in sink req.method:%s  path2file:%s' % (
             req.method, path2file))
+        resp_dict = {}
+
         try:
             username = req.get_header('username') or 'un'
             password = req.get_header('password') or 'pw'
+            req_dir = req.get_header('dir') or None
             logging.debug('username:%s, password:%s' % (username, password))
         except:
             raise falcon.HTTPBadRequest('bad req', 
@@ -291,10 +294,12 @@ class DiskSinkAdapter(object):
                                    os_options=os_options,
                                       auth_version=self.conf.auth_version)
                 logging.debug('url:%s, toekn:%s' % (storage_url, auth_token))
-                if path2file[-1] is '/':
-                    meta, objects = conn.get_container(user.disk_container)
+                # if path2file[-1] is '/':
+                if req_dir:
+                    meta, objects = conn.get_container(user.disk_container,
+                        delimiter='/',
+                        prefix=req_dir)
                     logging.debug('meta: %s,   objects: %s' % (meta, objects))
-                    resp_dict = {}
                     resp_dict['meta'] = meta
                     logging.debug('resp_dict:%s' % resp_dict)
                     objs = {}
@@ -320,8 +325,8 @@ class DiskSinkAdapter(object):
                 # if path2file:
                 logging.debug(' path2file:%s' % (path2file))
 
-                logging.debug('env:%s , \nstream:%s, \ncontext:, \ninput:' % (
-                req.env, req.stream.read()))
+                # logging.debug('env:%s , \nstream:%s, \ncontext:, \ninput:' % (
+                # req.env, req.stream.read()))
 
                 user = AccountModel.auth(username, password)
                 os_options = {'tenant_name':user.keystone_tenant}
@@ -331,11 +336,29 @@ class DiskSinkAdapter(object):
                                   user.password,
                                   os_options=os_options,
                                       auth_version=self.conf.auth_version)
-                logging.debug('url:%s, token:%s' % (storage_url, auth_token))
-                resp_dict = {}
-                resp_dict['auth_token'] = auth_token
-                resp_dict['storage_url'] = storage_url + '/' + \
-                    user.disk_container + '/' + path2file
+                logging.debug('url:%s, toekn:%s, if dir:%s' % 
+                    (storage_url, auth_token, req_dir))
+
+                if req_dir:
+                    # modify to create multiple dir when req_dir with multiple '/'
+                    req_dir = req_dir.rstrip('/')
+                    req_dir += '/'
+                    
+                    content_type = 'application/directory'
+                    obj = None
+
+                    swiftclient.client.put_object(storage_url, auth_token,
+                              user.disk_container, req_dir, obj,
+                              content_type=content_type)
+
+                    resp_dict['info'] = 'successfully create fold:%s' % req_dir
+                else:
+                    logging.debug('in else')
+
+                    logging.debug('url:%s, token:%s' % (storage_url, auth_token))
+                    resp_dict['auth_token'] = auth_token
+                    resp_dict['storage_url'] = storage_url + '/' + \
+                        user.disk_container + '/' + path2file
                 resp.status = falcon.HTTP_201
                 logging.debug('resp_dict:%s' % resp_dict)
 
