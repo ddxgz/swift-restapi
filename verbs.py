@@ -127,18 +127,18 @@ data = { 'disk': [
 
 
 # v2 account
-headers = { 'username':'tester3434',
+headers = { 'username':'tester444456',
             'password':'testing',
             'email':'user2@email.com' }
 data = { 'email': {
             'from':'password1',
             'to':'user1@email.com' }
         }
-# visit = Visit('http://10.200.44.84:8090/v1/account')
+visit = Visit('http://10.200.44.84:8888/v1/account')
 # visit = Visit('http://127.0.0.1:9803/v1/account')
 
 # visit.get(headers=headers)
-# visit.put(headers=headers, data=urllib.urlencode(data))
+visit.put(headers=headers, data=urllib.urlencode(data))
 # visit.post(headers=headers, data=urllib.urlencode(data))
 
 

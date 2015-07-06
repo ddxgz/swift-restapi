@@ -89,8 +89,7 @@ def createuser(swift_tenant, username, password):
     elif roleforuser[0].name == conf.swift_role:
         newuser = {}
         newuser['tenant'] = {'name':tenant.name, 'id':tenant.id}
-        newuser['user'] = {'name':user.name, 'id':user.id, 
-            'password':user.password}
+        newuser['user'] = {'name':user.name, 'id':user.id, 'password':user.password}
         newuser['role'] = {'name':role.name, 'id':role.id}
         newuser['endpoint'] = endpoint
         return newuser

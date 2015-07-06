@@ -53,14 +53,17 @@ Support both Swift tempauth and keystoneauth, specified by 'auth_version' in con
 
 TODO
 ---------------
+- functest, probtest, unittest
+- seperated dir refresh
+- DELETE /v1/account
 - ~~Multi-user support, need to integrate keystone~~
 - Verify if the request if ok, such as if the file exists when get,
 	or the path2file is a fold
 - set the temp_key expires time based on the size of target file
 - handling large files 
-- deal with when file with prefix dir upload to swift without pseudo fold created, need to create a pseudo first. This is not a problem when used by android client
+- deal with when file with prefix dir upload to swift without pseudo fold created, need to create a pseudo first. But this is not a problem when used by android client
 - report keystone add_user_role bug
-- handle fold rename and file rename by X-Copy-From header
+- ~~handle fold rename and file rename by X-Copy-From header~~
 - add ACL per container per user
 
 
@@ -69,7 +72,7 @@ BUG
 - There are problems with python-keystoneclient's add_user_role and delete_user, used curl command instead.
 
 
-Notifications
+Notice
 ---------------
 - when add a new role, need to add that role name to swift's proxy-server.conf
 

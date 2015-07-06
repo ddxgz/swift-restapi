@@ -1,7 +1,7 @@
 swiftrestapi:
     build: .
-    command: gunicorn --debug --log-level debug -b 0.0.0.0:8090 restapi:app
+    command: bash -c "python init.py && gunicorn --debug --log-level debug -b 0.0.0.0:8888 restapi:app"
     ports:
-      - "8090:8090"
+      - "8888:8888"
     volumes:
       - /home/pc/restapi:/restapi

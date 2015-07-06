@@ -251,7 +251,10 @@ class HomeListener:
             sort_keys=True, indent=4)
 
     def on_delete(self, req, resp):
-        pass
+        resp.status = falcon.HTTP_405
+        resp.body = json.dumps({'info':'Delete home is not implemented yet!'}, 
+            encoding='utf-8', 
+            sort_keys=True, indent=4)
 
 
 class DiskSinkAdapter(object):
@@ -472,7 +475,7 @@ class AccountListener:
                     AccountModel.password==password)
             q.execute()
             resp_dict['info'] = 'create user failed, did not create user:%s' % username
-            resp.status = falcon.HTTP_403
+            resp.status = falcon.HTTP_400
             resp.body = json.dumps(resp_dict, encoding='utf-8')
         except peewee.IntegrityError:
             logging.debug('in account put create except')
@@ -482,7 +485,7 @@ class AccountListener:
             old_user = AccountModel.get(AccountModel.username == username)
             logging.debug('user exists...')
             resp_dict['info'] = 'user exists, did not create user:%s' % username
-            resp.status = falcon.HTTP_403
+            resp.status = falcon.HTTP_409
             try:
                 change_user = AccountModel.get(AccountModel.username==username, 
                                 AccountModel.password==password)
@@ -553,7 +556,8 @@ class AccountListener:
 
     def on_delete(self, req, resp):
         """
-        delete the account, and all the files belong to this account
+        To be implemented.
+        Delete the account, and all the files belong to this account
         """
         pass
 
