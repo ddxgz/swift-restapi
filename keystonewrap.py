@@ -12,7 +12,34 @@ logging.basicConfig(format='\n===========My:%(levelname)s:%(message)s=========',
     level=logging.DEBUG)
 
 
-def createuser(swift_tenant, username, password):
+def delete_user(swift_tenant, username, password):
+    """
+    return a dict contains the info of the deleted user
+    """
+    admin = client.Client(token=conf.admin_token,
+                            endpoint=conf.endpoint_url_v2, debug=True)
+    users = admin.users.list()
+    logging.debug('users:%s' % [t.name for t in users])
+    # usernames = [x.name for x in users]
+    user = [x for x in users if x.name==username]
+    if user:
+        tenants = admin.tenants.list()
+        tenant = [x for x in tenants if x.name==swift_tenant][0]
+        logging.debug('tenant:%s' % tenant)
+        roles = admin.roles.list()
+        role = [x for x in roles if x.name==conf.swift_role][0]
+        logging.debug('role:%s' % role)
+        logging.debug('user:%s' % user[0])
+        # admin.roles.remove_user_role(user=user[0], role=role, tenant=tenant)
+        temp_remove_user_role(user=user[0], role=role, tenant=tenant)
+        logging.debug('after remove_user_role')
+        temp_delete_user(user[0])
+        return 1
+    else:
+        return 0
+
+
+def create_user(swift_tenant, username, password):
     """
     return a dict contains the info of the created user
     """
@@ -101,6 +128,9 @@ def createuser(swift_tenant, username, password):
 
 
 def temp_add_user_role(user, role, tenant):
+    """
+    temporay used, thanks to the Unknown bug of keystoneclient
+    """
     curlstr = 'curl -g -i -X PUT %s/tenants/%s/users/%s/roles/OS-KSADM/%s \
     -H "User-Agent: python-keystoneclient" \
     -H "Accept: application/json" \
@@ -111,6 +141,9 @@ def temp_add_user_role(user, role, tenant):
 
 
 def temp_delete_user(user):
+    """
+    temporay used, thanks to the Unknown bug of keystoneclient
+    """
     curlstr = 'curl -g -i -X DELETE %s/users/%s \
     -H "User-Agent: python-keystoneclient" \
     -H "Accept: application/json" \
@@ -118,6 +151,19 @@ def temp_delete_user(user):
         conf.endpoint_url_v2, user.id, conf.admin_token)
     stat = commands.getoutput(curlstr)
     logging.debug('temp_add_user_role stat:%s' % stat)
+
+
+def temp_remove_user_role(user, role, tenant):
+    """
+    temporay used, thanks to the Unknown bug of keystoneclient
+    """
+    curlstr = 'curl -g -i -X DELETE %s/tenants/%s/users/%s/roles/OS-KSADM/%s \
+    -H "User-Agent: python-keystoneclient" \
+    -H "Accept: application/json" \
+    -H "X-Auth-Token: %s"' % (
+        conf.endpoint_url_v2, tenant.id, user.id, role.id, conf.admin_token)
+    stat = commands.getoutput(curlstr)
+    logging.debug('temp_remove_user_role stat:%s' % stat)
 
 
 def create_service(service_name='swift', service_type='object-store', 

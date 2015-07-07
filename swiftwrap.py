@@ -11,7 +11,7 @@ import keystonewrap
 conf = Config('swiftconf.conf')
 
 
-def createuser(swift_tenant, username, password, account_level):
+def create_user(swift_tenant, username, password, account_level):
     """
     return a dict contains userinfo and containers
     """
@@ -19,7 +19,7 @@ def createuser(swift_tenant, username, password, account_level):
         logging.error('createuser requres auth_version 2!')
     logging.debug('in swiftwrap createuser')
     try:
-        user = keystonewrap.createuser(swift_tenant, username, password)
+        user = keystonewrap.create_user(swift_tenant, username, password)
         logging.debug(json.dumps(user, encoding='utf-8'))
         logging.debug('services:%s'%conf.services)
         for container in conf.services:

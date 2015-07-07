@@ -43,8 +43,9 @@ class TestAPI:
 
     def run_all(self):
         # self.test_put_dir()
-        self.test_put_file()
+        # self.test_put_file()
         # self.test_delete_home()
+        self.test_delete_account()
 
     def test_get_home(self):
         # runserver()
@@ -171,8 +172,25 @@ class TestAPI:
         # visit = Visit('http://10.200.44.84:8090/v1/account')
         visit = Visit('http://127.0.0.1:9803/v1/account')
 
-        # visit.get(headers=headers)
+        visit.get(headers=headers)
         visit.put(headers=headers, data=urllib.urlencode(data))
+        visit.get(headers=headers)
+
+    def test_delete_account(self):
+        headers = { 'username':'tester_for_delete',
+                    'password':'testing',
+                    'email':'user2@email.com' }
+        data = { 'email': {
+                    'from':'password1',
+                    'to':'user1@email.com' }
+                }
+        # visit = Visit('http://10.200.44.84:8090/v1/account')
+        visit = Visit('http://127.0.0.1:9803/v1/account')
+
+        visit.put(headers=headers, data=urllib.urlencode(data))
+        # visit.get(headers=headers)
+        visit.delete(headers=headers, data=urllib.urlencode(data))
+        # visit.get(headers=headers)
 
     def test_delete_home(self):
         headers = { 'username':'tester3838',

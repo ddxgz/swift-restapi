@@ -419,8 +419,8 @@ class AccountListener:
         resp_dict = {}
 
         try:
-            username = req.get_header('username') or 'un'
-            password = req.get_header('password') or 'pw'
+            username = req.get_header('username') or ''
+            password = req.get_header('password') or ''
             email = req.get_header('email') or 'email'
             # params = req.get_param_as_list()
             # logging.debug('params:%s'%params)
@@ -458,7 +458,7 @@ class AccountListener:
             #                       self.conf.account_username,
             #                       self.conf.password,
             #                       auth_version=self.conf.auth_version or 1)
-            keystone_info = swiftwrap.createuser(new_user.keystone_tenant, 
+            keystone_info = swiftwrap.create_user(new_user.keystone_tenant, 
                 new_user.keystone_username,
                 new_user.keystone_password, 
                 new_user.account_level)
@@ -501,8 +501,8 @@ class AccountListener:
         resp_dict = {}
 
         try:
-            username = req.get_header('username') or 'un'
-            password = req.get_header('password') or 'pw'
+            username = req.get_header('username') or ''
+            password = req.get_header('password') or ''
             # email = req.get_header('email') or 'email'
             # params = req.get_param_as_list()
             # logging.debug('params:%s'%params)
@@ -538,11 +538,13 @@ class AccountListener:
 
             resp_dict['info'] = 'user:%s does not exist' % username
             resp_dict['auth'] = 0
+            resp.status = falcon.HTTP_400
             resp.body = json.dumps(resp_dict, encoding='utf-8')
         except PasswordIncorrectException:
             logging.debug('in PasswordIncorrectException')
             resp_dict['info'] = 'user:%s password not correct' % username
             resp_dict['auth'] = 0
+            resp.status = falcon.HTTP_400
             resp.body = json.dumps(resp_dict, encoding='utf-8')
         # except:
         #     # `username` is a unique column, so this username already exists,
@@ -556,12 +558,53 @@ class AccountListener:
 
     def on_delete(self, req, resp):
         """
-        To be implemented.
+        DEVELOPMENT ONLY!
+
         Delete the account, and all the files belong to this account
         """
-        pass
+        logging.debug('in account delete')
+        resp_dict = {}
 
+        try:
+            username = req.get_header('username') or ''
+            password = req.get_header('password') or ''
+            # email = req.get_header('email') or 'email'
+            # params = req.get_param_as_list()
+            # logging.debug('params:%s'%params)
+            logging.debug('username:%s, password:%s' % 
+                (username, password))
+        except:
+            raise falcon.HTTPBadRequest('bad req', 
+                'when read from req, please check if the req is correct.')
+        
+        try:
+            # user = AccountModel.get(AccountModel.username==username, 
+            #                             AccountModel.password==password)
+            user = AccountModel.auth(username, password)
 
+            conn = swiftclient.client.Connection(self.conf.auth_url,
+                            user.keystone_tenant+':'+user.keystone_username,
+                                  user.password,
+                                  auth_version=self.conf.auth_version)
+            # for container in self.conf.services:
+            #     conn.delete_container(username+'_'+container)
+
+            keystonewrap.delete_user(user.keystone_tenant, 
+                    user.keystone_username,
+                    user.keystone_password)
+            logging.debug('after delete keytone user')
+            q = AccountModel.delete().where(AccountModel.username==username, 
+                    AccountModel.password==password)
+            q.execute()
+            resp_dict['info'] = 'user:%s deleted successfully' % username
+            resp.status = falcon.HTTP_200
+
+        except:
+            logging.debug('in delete user Exception')
+            resp_dict['info'] = 'delete user:%s not successfully' % username
+            resp.status = falcon.HTTP_400
+        resp.body = json.dumps(resp_dict, encoding='utf-8', 
+            sort_keys=True, indent=4)
 
 ## Useful for debugging problems in your API; works with pdb.set_trace()
 # if __name__ == '__main__':
