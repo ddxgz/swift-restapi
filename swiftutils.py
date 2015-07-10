@@ -10,8 +10,8 @@ from swiftclient import client
 
 import logging
 
-logging.basicConfig(format='===========My:%(levelname)s:%(message)s', 
-    level=logging.DEBUG)
+# logging.basicConfig(format='===========My:%(levelname)s:%(message)s', 
+#     level=logging.DEBUG)
 
 
 def get_temp_key(storage_url, auth_token):

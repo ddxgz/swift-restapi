@@ -7,8 +7,8 @@ from config import Config
 from myexceptions import UserNotExistException, PasswordIncorrectException
 
 
-logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
-    level=logging.DEBUG)
+# logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
+#     level=logging.DEBUG)
 
 
 conf = Config()

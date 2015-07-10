@@ -8,8 +8,8 @@ from utils import pretty_logging
 
 conf = Config('swiftconf.conf')
 
-logging.basicConfig(format='\n===========My:%(levelname)s:%(message)s=========', 
-    level=logging.DEBUG)
+# logging.basicConfig(format='\n===========My:%(levelname)s:%(message)s=========', 
+#     level=logging.DEBUG)
 
 
 def delete_user(swift_tenant, username, password):
@@ -79,17 +79,22 @@ def create_user(swift_tenant, username, password):
     users = admin.users.list()
     logging.debug('users:%s' % [t.name for t in users])
     usernames = [x.name for x in users]
+    pretty_logging({'username':username, 
+                        'tenant':tenant.name,
+                        'password':password}, ' before create user:')
     if username not in usernames:       
         user = admin.users.create(name=username, password=password,
             tenant_id=tenant.id)
         pretty_logging({'username':username, 
-                        'tenant':tenant.name}, 'created user:')
+                        'tenant':tenant.name,
+                        'password':password}, 'created user:')
     else:
         user = [x for x in users if x.name==username][0]
 
     roles = admin.roles.list()
     role = [x for x in roles if x.name==conf.swift_role][0]
-    logging.debug('roles:%s' % roles)
+    logging.debug('roles:{}, roleforswift:{}'.format(roles, role))
+    assert role.name == conf.swift_role
 
     # admin.roles.add_user_role(user, role, tenant)
     temp_add_user_role(user, role, tenant)
@@ -106,19 +111,27 @@ def create_user(swift_tenant, username, password):
     roleforuser = admin.roles.roles_for_user(user, tenant)
     logging.debug('roleforuser:%s, conf.swift_role:%s' % (roleforuser,
         conf.swift_role))
+    user_roles = [str(user_role.name) for user_role in roleforuser]
+    logging.debug('user_roles:{}'.format(user_roles))
+    for ur in user_roles:
+        if conf.swift_role == ur:
+            logging.debug('yyyyyyyyyes')
     if len(roleforuser) is 0:
         logging.debug('add_user_role failed for user :%s, will discard all \
             changes' % user.name)
         # admin.users.delete(user)
         temp_delete_user(user)
-        logging.debug('== after admin.users.delete(user)!')
+        logging.debug('after admin.users.delete(user)!')
         raise KeystoneUserCreateException
-    elif roleforuser[0].name == conf.swift_role:
+    # elif roleforuser[0].name == conf.swift_role:
+    elif conf.swift_role in user_roles:
         newuser = {}
-        newuser['tenant'] = {'name':tenant.name, 'id':tenant.id}
-        newuser['user'] = {'name':user.name, 'id':user.id, 'password':user.password}
+        newuser['tenant'] = {'name':tenant.name, 'id':tenant.id}        
+        newuser['user'] = {'name':user.name, 'id':user.id, 'password':password}
         newuser['role'] = {'name':role.name, 'id':role.id}
+
         newuser['endpoint'] = endpoint
+
         return newuser
     else:
         logging.debug('Unknown error when create keystone user and relation')
@@ -131,6 +144,8 @@ def temp_add_user_role(user, role, tenant):
     """
     temporay used, thanks to the Unknown bug of keystoneclient
     """
+    logging.debug('user.name:{}, role.name:{}, tenant.name{}:'.format(
+        user.name, role.name, tenant.name))
     curlstr = 'curl -g -i -X PUT %s/tenants/%s/users/%s/roles/OS-KSADM/%s \
     -H "User-Agent: python-keystoneclient" \
     -H "Accept: application/json" \
@@ -150,7 +165,7 @@ def temp_delete_user(user):
     -H "X-Auth-Token: %s"' % (
         conf.endpoint_url_v2, user.id, conf.admin_token)
     stat = commands.getoutput(curlstr)
-    logging.debug('temp_add_user_role stat:%s' % stat)
+    logging.debug('temp_delete_user stat:%s' % stat)
 
 
 def temp_remove_user_role(user, role, tenant):

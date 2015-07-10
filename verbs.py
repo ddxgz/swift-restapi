@@ -3,11 +3,12 @@ import os
 import ast
 import urllib, urllib2
 import requests
+import commands
 
 import logging
 
-logging.basicConfig(format='===========%(levelname)s:%(message)s=========', 
-    level=logging.DEBUG)
+# logging.basicConfig(format='===========%(levelname)s:%(message)s=========', 
+#     level=logging.DEBUG)
 
 
 class Visit():
@@ -19,6 +20,7 @@ class Visit():
         resp = urllib2.urlopen(req)
         page = resp.read()
         logging.debug('resp:%s, page:%s' % (resp, page))
+        return page
 
     def put(self, suffix_url='', headers=None, data=None):
         req = urllib2.Request(self.baseurl+suffix_url, headers=headers, 
@@ -39,6 +41,7 @@ class Visit():
         files = {'file': open(filename)}
         put_resp = requests.put(storage_url, files=files, headers=headers)
         logging.debug('put_resp:%s' % (put_resp))
+        return put_resp
 
 
     def post(self, suffix_url='', headers=None, data=None):
@@ -47,6 +50,7 @@ class Visit():
         resp = urllib2.urlopen(req)
         page = resp.read()
         logging.debug('resp:%s, page:%s' % (resp, page))
+        return page
 
 
     def delete(self, suffix_url='', headers=None, data=None):
@@ -58,6 +62,19 @@ class Visit():
         logging.debug('resp:%s, page:%s' % (resp, page))
         return page
 
+
+
+headers = { 'username':'test:tester_for_delete7',
+            'password':'testing' }
+data = { 'username':'user1',
+          'password':'password1',
+          'email':'user1@email.com' }
+
+visit = Visit('http://10.200.43.103:5000/v2.0/tokens')
+# visit = Visit('http://10.200.43.176:8888/v1/disk')
+# visit = Visit('http://10.200.44.84:8090/v1/account')
+
+# visit.get(headers=headers)
 
 
 headers = { 'username':'test:tester',

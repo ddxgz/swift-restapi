@@ -4,6 +4,7 @@ import time
 import urllib, urllib2
 import requests
 from six.moves import http_client
+import logging
 # import testtools
 # from testtools.matchers import Equals, MatchesRegex
 import unittest
@@ -12,13 +13,24 @@ import swiftclient
 import falcon
 import falcon.testing as testing
 
-from restapi import runserver
+# from restapi import runserver
 from verbs import Visit
 from config import Config
 from utils import pretty_logging
 
 
+logging.basicConfig(level=logging.DEBUG,
+                format='\n[%(levelname)s] %(message)s [%(filename)s][line:%(lineno)d] %(asctime)s ',
+                datefmt='%d %b %Y %H:%M:%S')
+
+
 HOST = 'http://127.0.0.1:9803'
+
+
+def runserver():
+    httpd = simple_server.make_server('127.0.0.1', 9803, app)
+    httpd.serve_forever()
+
 
 # class TestWsgi(unittest.TestCase):
 class TestAPI:
@@ -42,8 +54,9 @@ class TestAPI:
 
 
     def run_all(self):
-        # self.test_put_dir()
-        # self.test_put_file()
+        self.test_put_account()
+        self.test_put_dir()
+        self.test_put_file()
         # self.test_delete_home()
         self.test_delete_account()
 
@@ -172,12 +185,12 @@ class TestAPI:
         # visit = Visit('http://10.200.44.84:8090/v1/account')
         visit = Visit('http://127.0.0.1:9803/v1/account')
 
-        visit.get(headers=headers)
+        # visit.get(headers=headers)
         visit.put(headers=headers, data=urllib.urlencode(data))
         visit.get(headers=headers)
 
     def test_delete_account(self):
-        headers = { 'username':'tester_for_delete',
+        headers = { 'username':'tester_for_delete8',
                     'password':'testing',
                     'email':'user2@email.com' }
         data = { 'email': {
@@ -186,6 +199,7 @@ class TestAPI:
                 }
         # visit = Visit('http://10.200.44.84:8090/v1/account')
         visit = Visit('http://127.0.0.1:9803/v1/account')
+        logging.debug('before put')
 
         visit.put(headers=headers, data=urllib.urlencode(data))
         # visit.get(headers=headers)

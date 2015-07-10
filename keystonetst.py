@@ -6,8 +6,8 @@ from config import Config
 import logging, commands
 
 
-logging.basicConfig(format='\n===========My:%(levelname)s:%(message)s=========', 
-    level=logging.DEBUG)
+# logging.basicConfig(format='\n===========My:%(levelname)s:%(message)s=========', 
+#     level=logging.DEBUG)
 
 conf = Config('swiftconf.conf')
 

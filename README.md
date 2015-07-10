@@ -30,6 +30,29 @@ API v1:
 > /v1/disk/{path2file or path}
 >> return a storage_url and auth_token which can be used to PUT the file to the storage_url with auth_token in the header
 
+
+#####POST
+> /v1/disk
+>> to copy or move files, post with data like this:
+```
+{
+ 'disk':[
+            {
+            'from':'fold1/subfold2/curl.py',
+            'copy':'pics2/cnew3.conf' 
+            },
+            {
+            'from':'fold1/subfold1/models.py',
+            'move':'pics/new.png' 
+            },
+            {
+            'from':'config.py',
+            'copy':'pics3/cnew4.conf' 
+            }
+        ]
+}
+```
+
 #####DELETE
 > /v1/disk/{path2file or path}
 >> return an info tells whether the delete success or not
@@ -44,6 +67,23 @@ API v1:
 #####PUT
 > /v1/account/
 >> return an info whether the account create success or not
+
+
+#####POST
+> /v1/account
+>> to change user's data, post with data like this:
+```
+{
+ 'email': {
+            'from':'user1@email.com',
+            'to':'user2@email.com' 
+          }
+}
+```
+
+#####DELETE
+> /v1/account/
+>> return an info whether the account deleted success or not
 
 
 Configuration

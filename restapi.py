@@ -20,8 +20,12 @@ from myexceptions import UserNotExistException, PasswordIncorrectException
 import keystonewrap
 import swiftwrap
 
-logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
-    level=logging.DEBUG)
+# logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
+#     level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG,
+                format='\n[%(levelname)s] %(message)s [%(filename)s][line:%(lineno)d] %(asctime)s ',
+                datefmt='%d %b %Y %H:%M:%S')
+
 #sys.path.append('.')
 
 
@@ -61,9 +65,9 @@ app.add_sink(sink, r'^/v1/disk/(?P<path2file>.+?)$')
 
 ## Useful for debugging problems in your API; works with pdb.set_trace()
 # if __name__ == '__main__':
-def runserver():
-    httpd = simple_server.make_server('127.0.0.1', 9803, app)
-    httpd.serve_forever()
+# def runserver():
+#     httpd = simple_server.make_server('127.0.0.1', 9803, app)
+#     httpd.serve_forever()
 
 # conf = Config('swiftconf.conf')
 # conn = swiftclient.Connection(conf.auth_url,

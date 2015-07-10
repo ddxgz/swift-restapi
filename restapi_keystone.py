@@ -23,8 +23,12 @@ import keystonewrap
 import swiftwrap
 from utils import pretty_logging, list_with_key
 
-logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
-    level=logging.DEBUG)
+# logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
+#     level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG,
+#                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+#                 datefmt='%d %b %Y %H:%M:%S')
+
 #sys.path.append('.')
 
 
@@ -468,22 +472,23 @@ class AccountListener:
                 AccountModel.password == password)
             q.execute()
             resp_dict['info'] = 'successfully create user:%s' % username
+            resp_dict['username'] = username
             resp.status = falcon.HTTP_201
         except KeystoneUserCreateException:
-            logging.debug('==in restapi KeystoneUserCreateException!')
+            logging.error('==in restapi KeystoneUserCreateException!')
             q = AccountModel.delete().where(AccountModel.username==username, 
                     AccountModel.password==password)
             q.execute()
             resp_dict['info'] = 'create user failed, did not create user:%s' % username
-            resp.status = falcon.HTTP_400
+            resp.status = falcon.HTTP_500
             resp.body = json.dumps(resp_dict, encoding='utf-8')
         except peewee.IntegrityError:
-            logging.debug('in account put create except')
+            logging.warning('in account put create except')
 
             # `username` is a unique column, so this username already exists,
             # making it safe to call .get().
             old_user = AccountModel.get(AccountModel.username == username)
-            logging.debug('user exists...')
+            logging.warning('user exists...')
             resp_dict['info'] = 'user exists, did not create user:%s' % username
             resp.status = falcon.HTTP_409
             try:
@@ -491,6 +496,14 @@ class AccountListener:
                                 AccountModel.password==password)
             except:
                 logging.debug('change user data failed...')
+        except:
+            logging.error('==in restapi  put account Exception!')
+            q = AccountModel.delete().where(AccountModel.username==username, 
+                    AccountModel.password==password)
+            q.execute()
+            resp_dict['info'] = 'create user failed, did not create user:%s' % username
+            resp.status = falcon.HTTP_400
+            resp.body = json.dumps(resp_dict, encoding='utf-8')
         resp.body = json.dumps(resp_dict, encoding='utf-8')
 
     def on_get(self, req, resp):
@@ -581,6 +594,7 @@ class AccountListener:
             # user = AccountModel.get(AccountModel.username==username, 
             #                             AccountModel.password==password)
             user = AccountModel.auth(username, password)
+            logging.debug('delete after auth user')
 
             conn = swiftclient.client.Connection(self.conf.auth_url,
                             user.keystone_tenant+':'+user.keystone_username,
@@ -588,6 +602,7 @@ class AccountListener:
                                   auth_version=self.conf.auth_version)
             # for container in self.conf.services:
             #     conn.delete_container(username+'_'+container)
+            logging.debug('delete after con swift user')
 
             keystonewrap.delete_user(user.keystone_tenant, 
                     user.keystone_username,
@@ -597,6 +612,7 @@ class AccountListener:
                     AccountModel.password==password)
             q.execute()
             resp_dict['info'] = 'user:%s deleted successfully' % username
+            resp_dict['username'] = username
             resp.status = falcon.HTTP_200
 
         except:

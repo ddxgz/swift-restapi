@@ -20,8 +20,8 @@ from myexceptions import UserNotExistException, PasswordIncorrectException
 import keystonewrap
 import swiftwrap
 
-logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
-    level=logging.DEBUG)
+# logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
+#     level=logging.DEBUG)
 #sys.path.append('.')
 
 
