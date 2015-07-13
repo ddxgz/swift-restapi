@@ -128,6 +128,49 @@ class TestAccount(BaseTestCase):
         self.assertEqual(self.test_account_name1, resp_del['username'])
 
 
+# class TestDisk(BaseTestCase):
+#     """
+#     put an account
+#     delete an account
+#     """
+#     def runTest(self):
+#         headers = { 'username':self.test_account_name1,
+#                     'password':self.test_account_pw1,
+#                     'email':'user2@email.com' }
+#         data = { 'email': {
+#                     'from':'password1',
+#                     'to':'user1@email.com' }
+#                 }
+
+#         visit = Visit(ACCOUNT_ENDPOINT)
+
+#         # visit.get(headers=headers)
+#         resp_put = visit.put(headers=headers, data=urllib.urlencode(data))
+#         logging.debug('resp_put:{}'.format(resp_put))
+#         self.assertIn('username', resp_put)
+#         resp_put = ast.literal_eval(resp_put)
+#         self.assertEqual(self.test_account_name1, resp_put['username'])
+#         logging.debug('before get')
+
+#         resp_get1 = visit.get(headers=headers)
+#         logging.debug('resp_get1:{}'.format(resp_get1))
+#         self.assertIn('username', resp_get1)
+#         self.assertIn('disk_container', resp_get1)
+#         resp_get1 = ast.literal_eval(resp_get1)
+#         self.assertEqual(self.test_account_name1, resp_get1['username'])
+#         logging.debug('before get assertIn 2')
+#         self.assertEqual(
+#             self.test_account_name1 + '_' + self.conf.disk_container, 
+#             resp_get1['disk_container'])
+#         logging.debug('before delete')
+#         # visit.get(headers=headers)
+
+#         resp_del = visit.delete(headers=headers, data=urllib.urlencode(data))
+#         self.assertIn('username', resp_del)
+#         resp_del = ast.literal_eval(resp_del)
+#         self.assertEqual(self.test_account_name1, resp_del['username'])
+
+
 if __name__ == '__main__':
     run_server()
     unittest.main()

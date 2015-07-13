@@ -109,8 +109,8 @@ class HomeListener:
         """
         resp_dict = {}
         try:
-            username = req.get_header('username') or 'un'
-            password = req.get_header('password') or 'pw'
+            username = req.get_header('username') or ''
+            password = req.get_header('password') or ''
             logging.debug('username:%s, password:%s' % (username, password))
         except:
             raise falcon.HTTPBadRequest('bad req', 

@@ -1,6 +1,6 @@
 swift-webstorage-restapi
 ================
-This is REST API for wrapping Openstack Swift as a web storage, can be used by clients which do not require synchronization. 
+This is REST API for wrapping Openstack Swift as a web storage, can be used by clients which do not require synchronization.
 
 Credit to github.com/cschwede/django-swiftbrowser
 
@@ -28,7 +28,16 @@ API v1:
 #####PUT
 
 > /v1/disk/{path2file or path}
->> return a storage_url and auth_token which can be used to PUT the file to the storage_url with auth_token in the header
+>> Return a storage_url and auth_token which can be used to PUT the file to the storage_url with auth_token in the header.
+
+>> When put a dir, put the path in the header 'dir', which is the part after v1/disk/, for instance:
+   ```
+{
+	'username': username,
+	'password': password,
+	'dir':fold1
+}
+   ```
 
 
 #####POST
@@ -39,15 +48,15 @@ API v1:
  'disk':[
             {
             'from':'fold1/subfold2/curl.py',
-            'copy':'pics2/cnew3.conf' 
+            'copy':'pics2/cnew3.conf'
             },
             {
             'from':'fold1/subfold1/models.py',
-            'move':'pics/new.png' 
+            'move':'pics/new.png'
             },
             {
             'from':'config.py',
-            'copy':'pics3/cnew4.conf' 
+            'copy':'pics3/cnew4.conf'
             }
         ]
 }
@@ -76,7 +85,7 @@ API v1:
 {
  'email': {
             'from':'user1@email.com',
-            'to':'user2@email.com' 
+            'to':'user2@email.com'
           }
 }
 ```
@@ -100,7 +109,7 @@ TODO
 - Verify if the request if ok, such as if the file exists when get,
 	or the path2file is a fold
 - set the temp_key expires time based on the size of target file
-- handling large files 
+- handling large files
 - deal with when file with prefix dir upload to swift without pseudo fold created, need to create a pseudo first. But this is not a problem when used by android client
 - report keystone add_user_role bug
 - ~~handle fold rename and file rename by X-Copy-From header~~

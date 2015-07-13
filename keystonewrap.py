@@ -193,7 +193,8 @@ def create_service(service_name='swift', service_type='object-store',
     services = admin.services.list()
     # logging.debug('services:%s' % services)
     # logging.debug('services:%s' % [t.name for t in services])
-    servicenames = [x.name for x in services]
+    # servicenames = [x.name for x in services]
+    servicenames = [x.name.lower() for x in services]
 
     if service_name not in servicenames:       
         service = admin.services.create(name=service_name, 
