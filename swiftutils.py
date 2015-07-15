@@ -42,9 +42,10 @@ def get_temp_key(storage_url, auth_token):
 
 
 def get_fine_grained_temp_key(storage_url, auth_token, container_name=None):
-    """ Tries to get meta-temp-url key from account.
-    If not set, generate tempurl and save it to acocunt.
-    This requires at least account owner rights. """
+    """ 
+    Tries to get meta-temp-url key from account or container.
+    If not set, generate tempurl and save it.
+    """
 
     logging.debug('  in get_fine_grained_temp_key: container_name:%s, \
         storage_url:%s ' % 

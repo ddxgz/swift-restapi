@@ -108,6 +108,7 @@ def print_list(objs, fields, formatters={}, order_by=None):
 
 def list_with_key(dict_list, key):
     target_list = []
+    logging.debug('in list_with_key:{}, key:{}'.format(dict_list, key))
     for adict in dict_list:
         pretty_logging(adict,'in list_with_key, adict.keys:%s'%adict.keys())
         if key in adict.keys():

@@ -175,15 +175,20 @@ class HomeListener:
                 'when read from req, please check if the req is correct.')
         try:
             # logging.debug('env:%s , \nstream:%s, \ncontext:%s, \ninput:%s, \n\
-            #     params: %s ' % (
+            #     params: %s , ' % (
             #     req.env, req.stream.read(), req.context, 
-            #     req.env['wsgi.input'], req.params.get))
+            #     req.env['wsgi.input'], req.params))
      
             logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
                 self.conf.auth_url, self.conf.auth_version))
 
-            update_list = ast.literal_eval(req.params.get('disk'))
+            """
+            TODO:
+            Add data_check here for robust
+            """
+            update_list = ast.literal_eval(req.params.get('data'))
             pretty_logging({'update_list':update_list})
+            update_list = update_list.get('disk')
             move_list = []
             copy_list = []
             move_list = list_with_key(update_list, 'move')
@@ -379,8 +384,8 @@ class DiskSinkAdapter(object):
             try:
                 # if path2file:
                 logging.debug(' path2file:%s' % (path2file))
-                logging.debug('env:%s , \nstream:%s, \ncontext:, \ninput:' % (
-                req.env, req.stream.read()))
+                # logging.debug('env:%s , \nstream:%s, \ncontext:, \ninput:' % (
+                # req.env, req.stream.read()))
                 user = AccountModel.auth(username, password)
                 conn = swiftclient.client.Connection(self.conf.auth_url,
                                   user.keystone_tenant+':'+user.keystone_username,
@@ -392,7 +397,8 @@ class DiskSinkAdapter(object):
                 if objects:
                     for obj in objects:
                         conn.delete_object(user.disk_container, obj['name'])
-                    resp_dict['description'] = 'The files have been deleted'
+                        resp_dict['description_'+obj['name']] = \
+                            '{} have been deleted'.format(obj['name'])
                 else:
                     resp_dict['description'] = 'There is no file to be \
                         deleted'
@@ -475,7 +481,7 @@ class AccountListener:
             resp_dict['username'] = username
             resp.status = falcon.HTTP_201
         except KeystoneUserCreateException:
-            logging.error('==in restapi KeystoneUserCreateException!')
+            logging.error('in restapi KeystoneUserCreateException!')
             q = AccountModel.delete().where(AccountModel.username==username, 
                     AccountModel.password==password)
             q.execute()
@@ -497,7 +503,7 @@ class AccountListener:
             except:
                 logging.debug('change user data failed...')
         except:
-            logging.error('==in restapi  put account Exception!')
+            logging.error('restapi_keystone put account Exception!')
             q = AccountModel.delete().where(AccountModel.username==username, 
                     AccountModel.password==password)
             q.execute()
@@ -622,14 +628,8 @@ class AccountListener:
         resp.body = json.dumps(resp_dict, encoding='utf-8', 
             sort_keys=True, indent=4)
 
+
 ## Useful for debugging problems in your API; works with pdb.set_trace()
 # if __name__ == '__main__':
 #     httpd = simple_server.make_server('127.0.0.1', 8008, app)
 #     httpd.serve_forever()
-
-# conf = Config('swiftconf.conf')
-# conn = swiftclient.Connection(conf.auth_url,
-#                                   'test:tester',
-#                                   'testing',
-#                                   auth_version=conf.auth_version or 1)
-# conn.head_account()

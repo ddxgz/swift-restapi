@@ -9,6 +9,9 @@ import logging
 
 # logging.basicConfig(format='===========%(levelname)s:%(message)s=========', 
 #     level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG,
+                format='\n[%(levelname)s] %(message)s [%(filename)s][line:%(lineno)d] %(asctime)s ',
+                datefmt='%d %b %Y %H:%M:%S')
 
 
 class Visit():
@@ -19,8 +22,9 @@ class Visit():
         req = urllib2.Request(self.baseurl+suffix_url, headers=headers)
         resp = urllib2.urlopen(req)
         page = resp.read()
-        logging.debug('resp:%s, page:%s' % (resp, page))
-        return page
+        code = resp.getcode()
+        logging.debug('code:%s, page:%s' % (code, page))
+        return code, page
 
     def put(self, suffix_url='', headers=None, data=None):
         req = urllib2.Request(self.baseurl+suffix_url, headers=headers, 
@@ -28,11 +32,12 @@ class Visit():
         req.get_method = lambda: 'PUT'
         resp = urllib2.urlopen(req)
         page = resp.read()
-        logging.debug('resp:%s, page:%s' % (resp, page))
-        return page
+        code = resp.getcode()
+        logging.debug('code:%s, page:%s' % (code, page))
+        return code, page
 
     def put_file(self, filename='', suffix_url='', headers=None, data=None):
-        resp_str = self.put(suffix_url=suffix_url, headers=headers)
+        code_url, resp_str = self.put(suffix_url=suffix_url, headers=headers)
         resp = ast.literal_eval(resp_str)
         logging.debug('resp:%s' % (resp))
         token = resp.get('auth_token')
@@ -40,8 +45,10 @@ class Visit():
         headers = {'x-storage-token':token}
         files = {'file': open(filename)}
         put_resp = requests.put(storage_url, files=files, headers=headers)
-        logging.debug('put_resp:%s' % (put_resp))
-        return put_resp
+        page = put_resp.headers
+        code = put_resp.status_code
+        logging.debug('put_resp:{}, code:{}'.format(page, code))
+        return code, page
 
 
     def post(self, suffix_url='', headers=None, data=None):
@@ -49,8 +56,9 @@ class Visit():
             headers=headers, data=data)
         resp = urllib2.urlopen(req)
         page = resp.read()
-        logging.debug('resp:%s, page:%s' % (resp, page))
-        return page
+        code = resp.getcode()
+        logging.debug('code:%s, page:%s' % (code, page))
+        return code, page
 
 
     def delete(self, suffix_url='', headers=None, data=None):
@@ -59,32 +67,33 @@ class Visit():
         req.get_method = lambda: 'DELETE'
         resp = urllib2.urlopen(req)
         page = resp.read()
-        logging.debug('resp:%s, page:%s' % (resp, page))
-        return page
+        code = resp.getcode()
+        logging.debug('code:%s, page:%s' % (code, page))
+        return code, page
 
 
 
-headers = { 'username':'test:tester_for_delete7',
-            'password':'testing' }
+headers = { 'username':'aaa',
+            'password':'aaa' }
 data = { 'username':'user1',
           'password':'password1',
           'email':'user1@email.com' }
 
-visit = Visit('http://10.200.43.103:5000/v2.0/tokens')
+# visit = Visit('http://10.200.43.103:5000/v2.0/tokens')
 # visit = Visit('http://10.200.43.176:8888/v1/disk')
-# visit = Visit('http://10.200.44.84:8090/v1/account')
+visit = Visit('http://10.200.44.84:8888/v1/disk')
 
 # visit.get(headers=headers)
 
 
-headers = { 'username':'test:tester',
-            'password':'testing' }
+# headers = { 'username':'test:tester',
+#             'password':'testing' }
+# # data = { 'username':'user1',
+# #           'password':'password1',
+# #           'email':'user1@email.com' }
 # data = { 'username':'user1',
-#           'password':'password1',
-#           'email':'user1@email.com' }
-data = { 'username':'user1',
-            'password':'password1',
-            'email':'user1@email.com' }
+#             'password':'password1',
+#             'email':'user1@email.com' }
 # visit = Visit('http://10.200.44.84:8080/v1/disk')
 # visit = Visit('http://10.200.43.176:8888/v1/disk')
 # visit = Visit('http://10.200.44.84:8090/v1/account')

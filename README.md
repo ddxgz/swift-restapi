@@ -8,7 +8,7 @@ Credit to github.com/cschwede/django-swiftbrowser
 Functions
 ---------------
 - Download/upload files from/to Swift
-- Share files with links
+- Share files with links (by tempurl)
 - Provide API for clients of other platforms
 
 
@@ -102,16 +102,17 @@ Support both Swift tempauth and keystoneauth, specified by 'auth_version' in con
 
 TODO
 ---------------
+- change endpoint create
 - functest, probtest, unittest
 - seperated dir refresh
-- DELETE /v1/account
+- deal with the security of password storing and transferring 
+- ~~DELETE /v1/account~~
 - ~~Multi-user support, need to integrate keystone~~
 - Verify if the request if ok, such as if the file exists when get,
 	or the path2file is a fold
 - set the temp_key expires time based on the size of target file
 - handling large files
 - deal with when file with prefix dir upload to swift without pseudo fold created, need to create a pseudo first. But this is not a problem when used by android client
-- report keystone add_user_role bug
 - ~~handle fold rename and file rename by X-Copy-From header~~
 - add ACL per container per user
 
@@ -123,7 +124,7 @@ BUG
 
 Notice
 ---------------
-- when add a new role, need to add that role name to swift's proxy-server.conf
+- when add a new role, need to add that role name to swift's /etc/swift/proxy-server.conf
 
 
 Requirements

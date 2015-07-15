@@ -28,7 +28,7 @@ def create_user(swift_tenant, username, password, account_level):
                 username+'_'+container)
         return user
     except KeystoneUserCreateException:
-        logging.debug('==in swiftwrap KeystoneUserCreateException!')
+        logging.debug('swiftwrap KeystoneUserCreateException!')
         raise
 
 

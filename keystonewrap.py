@@ -46,35 +46,46 @@ def create_user(swift_tenant, username, password):
     # create tenant, user, role, endpoint
     admin = client.Client(token=conf.admin_token,
                             endpoint=conf.endpoint_url_v2, debug=True)
+    try:
+        tenants = admin.tenants.list()
+    except:
+        raise KeystoneUserCreateException
 
-    tenants = admin.tenants.list()
     # logging.debug('tenants:%s' % tenants)
     # logging.debug('tenants:%s' % [t.name for t in tenants])
     tenantnames = [x.name for x in tenants]
 
-    if swift_tenant not in tenantnames:       
-        tenant = admin.tenants.create(tenant_name=swift_tenant, 
-            description='%s tenant' % swift_tenant, 
-            enabled=True)
-        services = admin.services.list()
-        logging.debug('services:%s' % services)
-        # logging.debug('=======services:%s' % [t.name for t in services])
-        service = [x for x in services if x.name==conf.swift_service][0]
-        # logging.debug('service:%s' % service)
-        # endpoints = admin.endpoints.list()
-        # logging.debug('endpoints:%s' % endpoints[0])
+    if swift_tenant not in tenantnames:
+        logging.debug('no tenant')
+        try:       
+            tenant = admin.tenants.create(tenant_name=swift_tenant, 
+                description='%s tenant' % swift_tenant, 
+                enabled=True)
+            services = admin.services.list()
+            logging.debug('services:%s' % services)
+            # logging.debug('=======services:%s' % [t.name for t in services])
+            service = [x for x in services if x.name==conf.swift_service][0]
+            # logging.debug('service:%s' % service)
+            # endpoints = admin.endpoints.list()
+            # logging.debug('endpoints:%s' % endpoints[0])
 
-        admin.endpoints.create(
-             region=conf.swift_region, service_id=service.id,
-            publicurl="http://%s:8080/v1/AUTH_%s" % 
-                (conf.auth_host, tenant.id),
-            internalurl="http://%s:8080/v1/AUTH_%s" % 
-                (conf.auth_host, tenant.id),
-            adminurl="http://%s:5000/v2.0" % conf.auth_host)
+            """
+            no need to crate each endpoint
+            """
+            # admin.endpoints.create(
+            #      region=conf.swift_region, service_id=service.id,
+            #     publicurl="http://%s:8080/v1/AUTH_%s" % 
+            #         (conf.auth_host, tenant.id),
+            #     internalurl="http://%s:8080/v1/AUTH_%s" % 
+            #         (conf.auth_host, tenant.id),
+            #     adminurl="http://%s:5000/v2.0" % conf.auth_host)
+        except:
+            raise KeystoneUserCreateException
+
         logging.debug('after create endpoints!:')
     else:
         tenant = [x for x in tenants if x.name==swift_tenant][0]
-    # logging.debug('tenant:%s' % tenant.id)
+        logging.debug('tenant:%s' % tenant.id)
 
     users = admin.users.list()
     logging.debug('users:%s' % [t.name for t in users])
@@ -82,41 +93,52 @@ def create_user(swift_tenant, username, password):
     pretty_logging({'username':username, 
                         'tenant':tenant.name,
                         'password':password}, ' before create user:')
-    if username not in usernames:       
-        user = admin.users.create(name=username, password=password,
-            tenant_id=tenant.id)
-        pretty_logging({'username':username, 
-                        'tenant':tenant.name,
-                        'password':password}, 'created user:')
+    if username not in usernames:
+        try:   
+            user = admin.users.create(name=username, password=password,
+                tenant_id=tenant.id)
+            pretty_logging({'username':username, 
+                            'tenant':tenant.name,
+                            'password':password}, 'created user:')
+        except:
+            raise KeystoneUserCreateException
+
     else:
         user = [x for x in users if x.name==username][0]
 
-    roles = admin.roles.list()
-    role = [x for x in roles if x.name==conf.swift_role][0]
-    logging.debug('roles:{}, roleforswift:{}'.format(roles, role))
-    assert role.name == conf.swift_role
+    try:
+        roles = admin.roles.list()
+        role = [x for x in roles if x.name==conf.swift_role][0]
+        logging.debug('roles:{}, roleforswift:{}'.format(roles, role))
+        assert role.name == conf.swift_role
 
-    # admin.roles.add_user_role(user, role, tenant)
-    temp_add_user_role(user, role, tenant)
+        # admin.roles.add_user_role(user, role, tenant)
+        temp_add_user_role(user, role, tenant)
+    except:
+        raise KeystoneUserCreateException
 
     # client2 = client.Client(tenant_name=tenant.name, 
     #               username=user.name, 
     #               password=user.password, 
     #               auth_url='http://10.200.44.66:5000/v2.0')
-    endpoints = admin.endpoints.list()
-    logging.debug('%s, endpoints:%s' % (len(endpoints), endpoints[0]))
-    endpoint = [x.publicurl for x in endpoints \
-        if x.publicurl=="http://%s:8080/v1/AUTH_%s" % (conf.auth_host, tenant.id)][0]
+    # endpoints = admin.endpoints.list()
+    # logging.debug('%s, endpoints:%s' % (len(endpoints), endpoints[0]))
+    # endpoint = [x.publicurl for x in endpoints \
+    #     if x.publicurl=="http://%s:8080/v1/AUTH_%s" % (conf.auth_host, tenant.id)][0]
 
-    roleforuser = admin.roles.roles_for_user(user, tenant)
-    logging.debug('roleforuser:%s, conf.swift_role:%s' % (roleforuser,
-        conf.swift_role))
+    try:
+        roleforuser = admin.roles.roles_for_user(user, tenant)
+        logging.debug('roleforuser:%s, conf.swift_role:%s' % (roleforuser,
+            conf.swift_role))
+    except:
+        raise KeystoneUserCreateException
+
     user_roles = [str(user_role.name) for user_role in roleforuser]
     logging.debug('user_roles:{}'.format(user_roles))
     for ur in user_roles:
         if conf.swift_role == ur:
             logging.debug('yyyyyyyyyes')
-    if len(roleforuser) is 0:
+    if len(roleforuser) == 0:
         logging.debug('add_user_role failed for user :%s, will discard all \
             changes' % user.name)
         # admin.users.delete(user)
@@ -127,10 +149,10 @@ def create_user(swift_tenant, username, password):
     elif conf.swift_role in user_roles:
         newuser = {}
         newuser['tenant'] = {'name':tenant.name, 'id':tenant.id}        
-        newuser['user'] = {'name':user.name, 'id':user.id, 'password':password}
+        newuser['user'] = {'name':user.name, 'id':user.id}
         newuser['role'] = {'name':role.name, 'id':role.id}
 
-        newuser['endpoint'] = endpoint
+        # newuser['endpoint'] = endpoint
 
         return newuser
     else:
@@ -221,13 +243,14 @@ def create_service(service_name='swift', service_type='object-store',
 def create_role(role_name):
     """
     create role for init 
+    dupuliate role
     """
     # create tenant, user, role, endpoint
     admin = client.Client(token=conf.admin_token,
                             endpoint=conf.endpoint_url_v2, debug=True)
 
     roles = admin.roles.list()
-    # logging.debug('services:%s' % services)
+    logging.debug('roles:%s' % roles)
     # logging.debug('services:%s' % [t.name for t in services])
     rolenames = [x.name for x in roles]
 
@@ -249,4 +272,20 @@ def create_role(role_name):
     else:
         logging.info('role: %s already exists, not need to create.' % 
             role_name)
+
+
 # createuser(conf.account, 'tester402', 'testing')
+
+# admin = client.Client(token=conf.admin_token,
+#                             endpoint=conf.endpoint_url_v2, debug=True)
+# services = admin.services.list()
+# logging.debug('services:%s' % services)
+# # logging.debug('=======services:%s' % [t.name for t in services])
+# service = [x for x in services if x.name==conf.swift_service][0]
+# admin.endpoints.create(
+#              region=conf.swift_region, service_id=service.id,
+#             publicurl="http://%s:8080/v1/AUTH_$(tenant_id)s" % 
+#                 (conf.auth_host),
+#             internalurl="http://%s:8080/v1/AUTH_$(tenant_id)s" % 
+#                 (conf.auth_host),
+#             adminurl="http://%s:5000/v2.0" % conf.auth_host)

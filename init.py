@@ -19,4 +19,4 @@ conf = Config()
 
 create_tables()
 create_service()
-create_role(conf.swift_role)
+# create_role(conf.swift_role)
