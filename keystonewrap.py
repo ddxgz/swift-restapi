@@ -48,10 +48,9 @@ def create_user(swift_tenant, username, password):
                             endpoint=conf.endpoint_url_v2, debug=True)
     try:
         tenants = admin.tenants.list()
+        # logging.debug('tenants:%s' % tenants)
     except:
-        raise KeystoneUserCreateException
-
-    # logging.debug('tenants:%s' % tenants)
+        raise KeystoneUserCreateException 
     # logging.debug('tenants:%s' % [t.name for t in tenants])
     tenantnames = [x.name for x in tenants]
 
@@ -61,17 +60,17 @@ def create_user(swift_tenant, username, password):
             tenant = admin.tenants.create(tenant_name=swift_tenant, 
                 description='%s tenant' % swift_tenant, 
                 enabled=True)
-            services = admin.services.list()
-            logging.debug('services:%s' % services)
-            # logging.debug('=======services:%s' % [t.name for t in services])
-            service = [x for x in services if x.name==conf.swift_service][0]
-            # logging.debug('service:%s' % service)
-            # endpoints = admin.endpoints.list()
-            # logging.debug('endpoints:%s' % endpoints[0])
 
             """
             no need to crate each endpoint
             """
+            # services = admin.services.list()
+            # logging.debug('services:%s' % services)
+            # # logging.debug('=======services:%s' % [t.name for t in services])
+            # service = [x for x in services if x.name==conf.swift_service][0]
+            # logging.debug('service:%s' % service)
+            # endpoints = admin.endpoints.list()
+            # logging.debug('endpoints:%s' % endpoints[0])
             # admin.endpoints.create(
             #      region=conf.swift_region, service_id=service.id,
             #     publicurl="http://%s:8080/v1/AUTH_%s" % 

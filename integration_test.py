@@ -1,19 +1,11 @@
-import sys
 import threading
 import time
-import urllib, urllib2
-import requests
-from six.moves import http_client
 import logging
 from wsgiref import simple_server
-# import testtools
-# from testtools.matchers import Equals, MatchesRegex
 import unittest
 import ast
 
 import swiftclient
-import falcon
-import falcon.testing as testing
 
 from restapi import app
 from verbs import Visit
@@ -29,7 +21,6 @@ logging.basicConfig(level=logging.INFO,
 HOST = 'http://127.0.0.1:9803'
 ACCOUNT_ENDPOINT = HOST + '/v1/account'
 DISK_ENDPOINT = HOST + '/v1/disk'
-
 SUCCESS_STATUS_CODES = [200, 201, 202, 204]
 
 
@@ -73,33 +64,25 @@ class BaseTestCase(unittest.TestCase):
         visit = Visit(DISK_ENDPOINT)
         accvisit = Visit(ACCOUNT_ENDPOINT)
 
+        """
+        use keystoneclient and swiftclient to clean
+        """
         try:
             del_code, resp_del = accvisit.delete(headers=headers, 
                 data=urllib.urlencode(data))
             logging.info('resp_del:{}'.format(resp_del))
-
+        except:
+            print('no need to clean account')
+        try:
             code_del, resp_del = visit.delete(suffix_url='/'+self.dir1, 
                 headers=headers)
+        except:
+            print('no need to clean dir1')
+        try:
             code_del, resp_del = visit.delete(suffix_url='/'+self.file1, 
                 headers=headers)
         except:
-            print('no need to clean')
-        # visit.delete(headers=headers, data=urllib.urlencode(data))
-
-        # for img in self.tmp_accounts:
-        #     try:
-        #         self.client.remove_image(img)
-        #     except docker.errors.APIError:
-        #         pass
-        # for container in self.tmp_containers:
-        #     try:
-        #         self.client.stop(container, timeout=1)
-        #         self.client.remove_container(container)
-        #     except docker.errors.APIError:
-        #         pass
-        # for folder in self.tmp_folders:
-        #     shutil.rmtree(folder)
-        # self.client.close()
+            print('no need to clean file1')
 
 
 class TestConnection(BaseTestCase):

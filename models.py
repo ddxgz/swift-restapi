@@ -64,8 +64,8 @@ class AccountModel(BaseModel):
 
 def create_tables():
     database.connect()
-    # database.create_tables([AccountModel], safe=True)
-    database.create_tables([AccountModel])
+    database.create_tables([AccountModel], safe=True)
+    # database.create_tables([AccountModel])
 
 
 def test():

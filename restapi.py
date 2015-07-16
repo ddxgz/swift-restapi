@@ -68,10 +68,3 @@ app.add_sink(sink, r'^/v1/disk/(?P<path2file>.+?)$')
 # def runserver():
 #     httpd = simple_server.make_server('127.0.0.1', 9803, app)
 #     httpd.serve_forever()
-
-# conf = Config('swiftconf.conf')
-# conn = swiftclient.Connection(conf.auth_url,
-#                                   'test:tester',
-#                                   'testing',
-#                                   auth_version=conf.auth_version or 1)
-# conn.head_account()
