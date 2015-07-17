@@ -18,5 +18,5 @@ logging.basicConfig(level=logging.DEBUG,
 conf = Config()
 
 create_tables()
-create_service()
+# create_service()
 # create_role(conf.swift_role)

@@ -37,67 +37,15 @@ class PathListener:
     unuseful at present
     """
     def __init__(self):
-        self.conf = Config('swiftconf.conf')
+        self.conf = Config()
 
     def on_get(self, req, resp, path, thefile):
-
-        try:
-            username = req.get_header('username') or 'un'
-            password = req.get_header('password') or 'pw'
-            logging.debug('username:%s, password:%s' % (username, password))
-        except:
-            raise falcon.HTTPBadRequest('bad req', 
-                'when read from req, please check if the req is correct.')
-        try:
-            # if path2file:
-            logging.debug('path2file:%s, file:%s' % (path, thefile))
-            # logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
-            #     self.conf.auth_url, self.conf.auth_version))
-            # conn = swiftclient.Connection(self.conf.auth_url,
-            #                       self.conf.account_username,
-            #                       self.conf.password,
-            #                       auth_version=self.conf.auth_version or 1)
-            # meta, objects = conn.get_container(self.conf.container)
-            # meta, obj = conn.get_object(self.conf.container, path2file)
-            # logging.debug('meta: %s,   obj: %s' % (meta, obj))
-
-            storage_url, auth_token = swiftclient.client.get_auth(
-                                    self.conf.auth_url,
-                                    self.conf.account_username,
-                                  self.conf.password,
-                                  auth_version=1)
-            # logging.debug('rs: %s'% swiftclient.client.get_auth(
-            #                         self.conf.auth_url,
-            #                         self.conf.account_username,
-            #                       self.conf.password,
-            #                       auth_version=1))
-            logging.debug('url:%s, toekn:%s' % (storage_url, auth_token))
-         
-            temp_url = get_temp_url(storage_url, auth_token,
-                                          self.conf.disk_container, path2file)
-            resp_dict = {}
-            # resp_dict['meta'] = meta
-            # objs = {}
-            # for obj in objects:
-            #     logging.debug('obj:%s' % obj.get('name'))
-            #     objs[obj.get('name')] = obj
-            resp_dict['temp_url'] = temp_url
-            logging.debug('resp_dict:%s' % resp_dict)
-
-        except:
-            raise falcon.HTTPBadRequest('bad req', 
-                'username or password not correct!')
-        resp.status = falcon.HTTP_200
-        resp.body = json.dumps(resp_dict, encoding='utf-8', 
-            sort_keys=True, indent=4)
-        resp.body = temp_url
-        # resp.stream = obj
-        # resp.head = meta
+        pass
 
 
 class HomeListener:
     def __init__(self):
-        self.conf = Config('swiftconf.conf')
+        self.conf = Config()
 
     def on_get(self, req, resp):
         """
@@ -109,51 +57,58 @@ class HomeListener:
         """
         resp_dict = {}
         try:
-            username = req.get_header('username') or ''
-            password = req.get_header('password') or ''
+            username = req.get_header('username')
+            password = req.get_header('password')
             logging.debug('username:%s, password:%s' % (username, password))
         except:
             raise falcon.HTTPBadRequest('bad req', 
-                'when read from req, please check if the req is correct.')
+                'please check if the req is correct, put username and \
+                    password in the headers.')
         try:
             logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
                 self.conf.auth_url, self.conf.auth_version))
-            # user = AccountModel.get(AccountModel.username==username, 
-            #                             AccountModel.password==password)
-            user = AccountModel.auth(username, password)
-            # logging.debug('1st resp_dict:%s' % resp_dict)
 
+            user = AccountModel.auth(username, password)
             resp_dict['info'] = 'successfully get user:%s' % username
             resp_dict['username'] = user.username
             resp_dict['email'] = user.email
             resp_dict['account_level'] = user.account_level
             resp_dict['join_date'] = user.join_date
             resp_dict['keystone_info'] = user.keystone_info
-            logging.debug('1st resp_dict:%s' % resp_dict)
-            conn = swiftclient.Connection(self.conf.auth_url,
-                                  user.keystone_tenant+':'+user.keystone_username,
-                                  user.password,
-                                  auth_version=self.conf.auth_version)
+            logging.debug('before conn to swift, resp_dict:%s' % resp_dict)
+
+            conn = swiftclient.Connection(
+                            self.conf.auth_url,
+                            user.keystone_tenant+':'+user.keystone_username,
+                            user.password,
+                            auth_version=self.conf.auth_version)
             meta, objects = conn.get_container(user.disk_container)
             logging.debug('meta: %s,   objects: %s' % (meta, objects))
+
             resp_dict = {}
             resp_dict['meta'] = meta
-            logging.debug('resp_dict:%s' % resp_dict)
             objs = {}
             for obj in objects:
                 logging.debug('obj:%s' % obj.get('name'))
                 objs[obj.get('name')] = obj
             resp_dict['objects'] = objs        
+            logging.debug('resp_dict:%s' % resp_dict)
         except UserNotExistException:
             logging.debug('in UserNotExistException')
-
             resp_dict['info'] = 'user:%s does not exist' % username
+            resp.status = falcon.HTTP_404
             resp.body = json.dumps(resp_dict, encoding='utf-8')
         except PasswordIncorrectException:
             logging.debug('in PasswordIncorrectException')
             resp_dict['info'] = 'user:%s password not correct' % username
+            resp.status = falcon.HTTP_401
             resp.body = json.dumps(resp_dict, encoding='utf-8')
-        
+        except:
+            description = ('Unknown error, username and passwd ok!')
+            raise falcon.HTTPServiceUnavailable(
+                    'Service Error',
+                    description,
+                    30)     
         resp.status = falcon.HTTP_200
         resp.body = json.dumps(resp_dict, encoding='utf-8', 
             sort_keys=True, indent=4)
@@ -247,15 +202,21 @@ class HomeListener:
      
         except UserNotExistException:
             logging.debug('in UserNotExistException')
-
             resp_dict['info'] = 'user:%s does not exist' % username
+            resp.status = falcon.HTTP_404
             resp.body = json.dumps(resp_dict, encoding='utf-8')
         except PasswordIncorrectException:
             logging.debug('in PasswordIncorrectException')
             resp_dict['info'] = 'user:%s password not correct' % username
+            resp.status = falcon.HTTP_401
             resp.body = json.dumps(resp_dict, encoding='utf-8')
-        
-        resp.status = falcon.HTTP_200
+        except:
+            description = ('Unknown error, username and passwd ok!')
+            raise falcon.HTTPServiceUnavailable(
+                    'Service Error',
+                    description,
+                    30)         
+        resp.status = falcon.HTTP_201
         resp.body = json.dumps(resp_dict, encoding='utf-8', 
             sort_keys=True, indent=4)
 
@@ -267,7 +228,7 @@ class HomeListener:
 
 
 class DiskSinkAdapter(object):
-    conf = Config('swiftconf.conf')
+    conf = Config()
 
     def __call__(self, req, resp, path2file):
         """
@@ -328,9 +289,22 @@ class DiskSinkAdapter(object):
                     resp_dict['path2file'] = path2file
                 resp.status = falcon.HTTP_200
                 # logging.debug('resp_dict:%s' % resp_dict)
+            except UserNotExistException:
+                logging.debug('in UserNotExistException')
+                resp_dict['info'] = 'user:%s does not exist' % username
+                resp.status = falcon.HTTP_404
+                resp.body = json.dumps(resp_dict, encoding='utf-8')
+            except PasswordIncorrectException:
+                logging.debug('in PasswordIncorrectException')
+                resp_dict['info'] = 'user:%s password not correct' % username
+                resp.status = falcon.HTTP_401
+                resp.body = json.dumps(resp_dict, encoding='utf-8')
             except:
-                raise falcon.HTTPBadRequest('bad req', 
-                    'username or password not correct!')
+                description = ('Unknown error, username and passwd ok!')
+                raise falcon.HTTPServiceUnavailable(
+                        'Service Error',
+                        description,
+                        30)   
 
         elif req.method == 'PUT':
             try:
@@ -414,7 +388,7 @@ class DiskSinkAdapter(object):
 
 class AccountListener:
     def __init__(self):
-        self.conf = Config('swiftconf.conf')
+        self.conf = Config()
 
     def on_put(self, req, resp):
         """

@@ -6,7 +6,8 @@ from myexceptions import KeystoneUserCreateException
 from config import Config
 from utils import pretty_logging
 
-conf = Config('swiftconf.conf')
+
+conf = Config()
 
 # logging.basicConfig(format='\n===========My:%(levelname)s:%(message)s=========', 
 #     level=logging.DEBUG)

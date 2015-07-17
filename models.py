@@ -68,20 +68,6 @@ def create_tables():
     # database.create_tables([AccountModel])
 
 
-def test():
-    # AccountModel.create(username='username', 
-    #                 password='password',
-    #                 email='email',
-    #                 join_date=str(datetime.datetime.now())+' GMT+8',
-    #                 account_level=0)
-    logging.debug('in account post create except')
-
-            # `username` is a unique column, so this username already exists,
-            # making it safe to call .get().
-    old_user = AccountModel.get(AccountModel.username == 'user1')
-    logging.debug('user exists:%s'%old_user.email)
-
-
 # create_tables()
 
 # test()

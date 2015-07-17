@@ -1,9 +1,11 @@
 import threading
 import time
 import logging
-from wsgiref import simple_server
 import unittest
 import ast
+import urllib
+import urllib2
+from wsgiref import simple_server
 
 import swiftclient
 
@@ -13,9 +15,11 @@ from config import Config
 from utils import pretty_logging
 
 
-logging.basicConfig(level=logging.INFO,
-                format='\n[%(levelname)s] %(message)s [%(filename)s][line:%(lineno)d] %(asctime)s ',
-                datefmt='%d %b %Y %H:%M:%S')
+logging.basicConfig(
+    filename='log_test_integration.log', filemode='w',
+    level=logging.DEBUG,
+    format='\n[%(levelname)s] %(message)s [%(filename)s][line:%(lineno)d] %(asctime)s ',
+    datefmt='%d %b %Y %H:%M:%S')
 
 
 HOST = 'http://127.0.0.1:9803'

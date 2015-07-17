@@ -9,7 +9,7 @@ import logging, commands
 # logging.basicConfig(format='\n===========My:%(levelname)s:%(message)s=========', 
 #     level=logging.DEBUG)
 
-conf = Config('swiftconf.conf')
+conf = Config()
 
 kc2 = client.Client(tenant_name='admin', 
                   username='admin', 

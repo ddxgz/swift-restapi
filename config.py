@@ -15,8 +15,8 @@ class Config(object):
         if specified is True:
             config_file = self.config_file
         else:
-            config_file = os.environ.get('SWIFTCLIENT_CONFIG_FILE',
-                                     './swiftconf.conf')
+            config_file = os.environ.get('',
+                                     './server.conf')
         config = configparser.SafeConfigParser({'auth_version': '1'})
         config.read(config_file)
         if config.has_section('swiftconf'):

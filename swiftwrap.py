@@ -8,7 +8,7 @@ from config import Config
 import keystonewrap
 
 
-conf = Config('swiftconf.conf')
+conf = Config()
 
 
 def create_user(swift_tenant, username, password, account_level):

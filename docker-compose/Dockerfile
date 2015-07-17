@@ -14,7 +14,7 @@ RUN apt-get -qqy update && apt-get install -y \
 
 
 # for copy requirements.txt to container
-COPY . /restapi
+#COPY . /restapi
 
 WORKDIR /restapi
 

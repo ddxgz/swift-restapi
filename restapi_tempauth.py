@@ -27,7 +27,7 @@ import swiftwrap
 
 class PathListener:
     def __init__(self):
-        self.conf = Config('swiftconf.conf')
+        self.conf = Config()
 
     def on_get(self, req, resp, path, thefile):
         """
@@ -89,7 +89,7 @@ class PathListener:
 
 class HomeListener:
     def __init__(self):
-        self.conf = Config('swiftconf.conf')
+        self.conf = Config()
 
     def on_get(self, req, resp):
         """
@@ -221,7 +221,7 @@ class HomeListener:
 
 
 class DiskSinkAdapter(object):
-    conf = Config('swiftconf.conf')
+    conf = Config()
 
     def __call__(self, req, resp, path2file):
         """
@@ -356,7 +356,7 @@ class DiskSinkAdapter(object):
 
 class AccountListener:
     def __init__(self):
-        self.conf = Config('swiftconf.conf')
+        self.conf = Config()
 
     def on_post(self, req, resp):
         """

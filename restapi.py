@@ -20,17 +20,15 @@ from myexceptions import UserNotExistException, PasswordIncorrectException
 import keystonewrap
 import swiftwrap
 
-# logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
-#     level=logging.DEBUG)
-logging.basicConfig(level=logging.DEBUG,
-                format='\n[%(levelname)s] %(message)s [%(filename)s][line:%(lineno)d] %(asctime)s ',
-                datefmt='%d %b %Y %H:%M:%S')
 
-#sys.path.append('.')
-
+# logging.basicConfig(
+#     filename='log_restapi.log', filemode='w',
+#     level=logging.DEBUG,
+#     format='\n[%(levelname)s] %(message)s [%(filename)s][line:%(lineno)d] %(asctime)s ',
+#     datefmt='%d %b %Y %H:%M:%S')
 
 
-conf = Config('swiftconf.conf')
+conf = Config()
 
 app = falcon.API()
 
@@ -51,7 +49,7 @@ elif conf.auth_version is "1":
     # sink = DiskSinkAdapter()
 
 home_listener = HomeListener()
-path_listener = PathListener()
+# path_listener = PathListener()
 account_listener = AccountListener()
 sink = DiskSinkAdapter()
     

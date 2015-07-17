@@ -5,13 +5,6 @@ import six
 from prettytable import PrettyTable
 
 
-# yesterday = '2012-03-01'
-# t1 = datetime.strptime(yesterday, '%Y-%m-%d')
-# print(t1)
-# print(timedelta(days=1))
-# print(type(str(t1-timedelta(days=1))))
-
-
 def yesterday_str(today_str, format='%Y-%m-%d'):
     return str(datetime.strptime(today_str, format) - timedelta(days=1))[:10]
 
@@ -22,11 +15,6 @@ def tomorrow_str(today_str, format='%Y-%m-%d'):
 
 def now_str(format='%Y-%m-%d'):
     return str(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'))
-
-
-# print(yesterday_str('2012-03-01'))
-# print(tomorrow_str('2012-03-01'))
-
 
 
 def print_dict(d, wrap=0):
@@ -47,16 +35,6 @@ def print_dict(d, wrap=0):
     # print(encoded)
     # print(pt)
     return pt
-
-
-# d = {'share':12345,
-#     'money_total':5431}
-
-# print_dict(d)
-
-# fl = ['name', 'share', 'money', 'increment']
-# l = ['9090', 12345, 876, 6788]
-# print_list(l, fl)
 
 
 def pretty_logging(d=None, notes='', level=logging.DEBUG):
