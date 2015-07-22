@@ -51,6 +51,7 @@ def create_user(swift_tenant, username, password):
         tenants = admin.tenants.list()
         # logging.debug('tenants:%s' % tenants)
     except:
+        logging.error('there is a problem when listing the tenant!')
         raise KeystoneUserCreateException 
     # logging.debug('tenants:%s' % [t.name for t in tenants])
     tenantnames = [x.name for x in tenants]
@@ -80,6 +81,7 @@ def create_user(swift_tenant, username, password):
             #         (conf.auth_host, tenant.id),
             #     adminurl="http://%s:5000/v2.0" % conf.auth_host)
         except:
+            logging.error('there is a problem when creating the tenant!')
             raise KeystoneUserCreateException
 
         logging.debug('after create endpoints!:')
@@ -101,20 +103,29 @@ def create_user(swift_tenant, username, password):
                             'tenant':tenant.name,
                             'password':password}, 'created user:')
         except:
+            logging.error('there is a problem when creating the user!')
             raise KeystoneUserCreateException
 
     else:
         user = [x for x in users if x.name==username][0]
 
     try:
+        # logging.debug('before roles.list()')
+
         roles = admin.roles.list()
-        role = [x for x in roles if x.name==conf.swift_role][0]
+        # logging.debug('after roles.list()')
+        # for x in roles:
+        #     logging.debug('role:{}, swift_role:{}, compare:{}'.format(
+        #         str(x.name), conf.swift_role, x.name.lower()==conf.swift_role.lower()))
+        role = [x for x in roles if x.name.lower()==conf.swift_role.lower()][0]
         logging.debug('roles:{}, roleforswift:{}'.format(roles, role))
-        assert role.name == conf.swift_role
+        # assert role.name == conf.swift_role
 
         # admin.roles.add_user_role(user, role, tenant)
         temp_add_user_role(user, role, tenant)
     except:
+        logging.error('there is a problem with roles, maybe it\'s because the \
+            swift_role in conf different to role name in keystone!')
         raise KeystoneUserCreateException
 
     # client2 = client.Client(tenant_name=tenant.name, 
@@ -131,19 +142,19 @@ def create_user(swift_tenant, username, password):
         logging.debug('roleforuser:%s, conf.swift_role:%s' % (roleforuser,
             conf.swift_role))
     except:
+        logging.error('there is a problem when getting the role for the user!')
         raise KeystoneUserCreateException
 
     user_roles = [str(user_role.name) for user_role in roleforuser]
     logging.debug('user_roles:{}'.format(user_roles))
-    for ur in user_roles:
-        if conf.swift_role == ur:
-            logging.debug('yyyyyyyyyes')
+
     if len(roleforuser) == 0:
         logging.debug('add_user_role failed for user :%s, will discard all \
             changes' % user.name)
         # admin.users.delete(user)
         temp_delete_user(user)
         logging.debug('after admin.users.delete(user)!')
+        logging.error('there is no role for the user!')
         raise KeystoneUserCreateException
     # elif roleforuser[0].name == conf.swift_role:
     elif conf.swift_role in user_roles:
@@ -151,12 +162,10 @@ def create_user(swift_tenant, username, password):
         newuser['tenant'] = {'name':tenant.name, 'id':tenant.id}        
         newuser['user'] = {'name':user.name, 'id':user.id}
         newuser['role'] = {'name':role.name, 'id':role.id}
-
         # newuser['endpoint'] = endpoint
-
         return newuser
     else:
-        logging.debug('Unknown error when create keystone user and relation')
+        logging.error('Unknown error when create keystone user and relation')
         temp_delete_user(user)
         logging.debug('== after admin.users.delete(user)!')
         raise KeystoneUserCreateException

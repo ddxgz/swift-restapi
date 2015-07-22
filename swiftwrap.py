@@ -28,7 +28,7 @@ def create_user(swift_tenant, username, password, account_level):
                 username+'_'+container)
         return user
     except KeystoneUserCreateException:
-        logging.debug('swiftwrap KeystoneUserCreateException!')
+        logging.error('swiftwrap KeystoneUserCreateException!')
         raise
 
 
@@ -43,7 +43,6 @@ def put_container(tenant, username, password, container):
 
 
 def move_object(tenant, username, password, container, source, dest):
-
     copy_object(tenant, username, password, container, source, dest)
     conn = swiftclient.Connection(conf.auth_url,
                                   tenant+':'+username,

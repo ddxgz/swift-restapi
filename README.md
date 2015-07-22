@@ -138,4 +138,5 @@ just docker-compose up. The port can be changed as you like in docker-compose.ym
 - Gunicorn or uWsgi
 - Falcon >= 0.3.0
 - peewee >= 2.6.1
+- Six >= 1.9
 - curl
