@@ -242,6 +242,12 @@ class TestDisk(BaseTestCase):
         self.assertNotEqual('application/directory', 
             resp_get3['objects'][dir1+'/'+file1]['content_type'])
 
+
+        """
+        add test for copy and move
+        """
+
+
         code_del, resp_del = visit.delete(suffix_url='/'+dir1, 
             headers=headers)
         self.assertIn(code_del, SUCCESS_STATUS_CODES)

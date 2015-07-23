@@ -14,23 +14,31 @@ Functions
 
 API v1:
 ---------------
+All the requests need username and password in the header:
+```
+{
+    'username': username,
+    'password': password,
+    ...
+}
+```
 
 ####Files
 #####GET
 
-> /v1/disk/
+> `/v1/disk/`
 >> return a json contains metadate and all the files and folds
 
-> /v1/disk/{path2file or path}
->> return a tempo_url which can download the file
->>> if request a dir, put the path in the header 'dir'
+> `/v1/disk/{path2file or dir}`
+>> if it's path2file, it will return a tempo_url which can download the file, and if it's dir, it will return all the files and dirs under it.
+>>> if request a dir, put the path in the header `dir`
 
 #####PUT
 
-> /v1/disk/{path2file or path}
+> `/v1/disk/{path2file or dir}`
 >> Return a storage_url and auth_token which can be used to PUT the file to the storage_url with auth_token in the header.
 
->> When put a dir, put the path in the header 'dir', which is the part after v1/disk/, for instance:
+>> When put a dir, put the path in the header `dir`, which is the part after v1/disk/, for instance:
    ```
 {
 	'username': username,
@@ -41,7 +49,7 @@ API v1:
 
 
 #####POST
-> /v1/disk
+> `/v1/disk`
 >> to copy or move files, post with data like this:
 ```
 {
@@ -63,23 +71,23 @@ API v1:
 ```
 
 #####DELETE
-> /v1/disk/{path2file or path}
+> `/v1/disk/{path2file or path}`
 >> return an info tells whether the delete success or not
 
 
 ####Account
 #####GET
-> /v1/account/
+> `/v1/account/`
 >> return a json contains info of the user account
 
 
 #####PUT
-> /v1/account/
+> `/v1/account/`
 >> return an info whether the account create success or not
 
 
 #####POST
-> /v1/account
+> `/v1/account`
 >> to change user's data, post with data like this:
 ```
 {
@@ -91,21 +99,23 @@ API v1:
 ```
 
 #####DELETE
-> /v1/account/
+> `/v1/account/`
 >> return an info whether the account deleted success or not
 
 
 Configuration
 ---------------
-Support both Swift tempauth and keystoneauth, specified by 'auth_version' in config file. '1' for tempauth and '2' for keystoneauth.
+Support both Swift tempauth and keystoneauth, specified by `auth_version` in config file. `1` for tempauth and `2` for keystoneauth.
 
 
 TODO
 ---------------
 - change endpoint create
+- use a separated user auth module
+- add test for copy and move
 - functest, probtest, unittest
 - seperated dir refresh
-- deal with the security of password storing and transferring 
+- deal with the security of password storing and transferring
 - ~~DELETE /v1/account~~
 - ~~Multi-user support, need to integrate keystone~~
 - Verify if the request if ok, such as if the file exists when get,
