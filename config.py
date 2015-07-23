@@ -17,7 +17,12 @@ class Config(object):
         else:
             config_file = os.environ.get('',
                                      './server.conf')
-        config = configparser.SafeConfigParser({'auth_version': '1'})
+        """
+        Since this restapi currently only support keystone auth, so the default
+        auth_version is set to 2
+        """
+        # config = configparser.SafeConfigParser({'auth_version': '1'})
+        config = configparser.SafeConfigParser({'auth_version': '2'})
         config.read(config_file)
         if config.has_section('swiftconf'):
             auth_host = config.get('swiftconf', 'auth_host')
