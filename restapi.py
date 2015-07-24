@@ -2,24 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 from wsgiref import simple_server
 import falcon
-import json
-import Queue
-import sys, os
-import datetime
 import logging
 
-from swiftutils import get_temp_key, get_temp_url
-
-import swiftclient
-# from swiftclient import client
-import peewee
-
 from config import Config
-from models import AccountModel, database
-from myexceptions import UserNotExistException, PasswordIncorrectException
-import keystonewrap
-import swiftwrap
-
 
 # logging.basicConfig(
 #     filename='log_restapi.log', filemode='w',
@@ -36,24 +21,15 @@ if conf.auth_version == "2":
     from restapi_keystone import HomeListener, PathListener, AccountListener, \
         DiskSinkAdapter
 
-    # home_listener = HomeListener()
-    # path_listener = PathListener()
-    # account_listener = AccountListener()
-    # sink = DiskSinkAdapter()
 elif conf.auth_version is "1":
     from restapi_tempauth import HomeListener, PathListener, AccountListener, \
         DiskSinkAdapter
-    # home_listener = HomeListener()
-    # path_listener = PathListener()
-    # account_listener = AccountListener()
-    # sink = DiskSinkAdapter()
+
 
 home_listener = HomeListener()
-# path_listener = PathListener()
 account_listener = AccountListener()
 sink = DiskSinkAdapter()
     
-# app.add_route('/v1/disk/{path}/{file}', path_listener)
 app.add_route('/v1/disk', home_listener)
 app.add_route('/v1/account', account_listener)
 # app.add_route('/v1/disk/{filename}', home_listener)

@@ -1,3 +1,0 @@
-python-swiftclient
-falcon
-peewee

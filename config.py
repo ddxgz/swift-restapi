@@ -52,18 +52,6 @@ class Config(object):
             service_list = services_line.split(',')
             self.services = [i.strip() for i in service_list]
 
-        if config.has_section('devsetting'):
-            no_catch = config.get('devsetting', 'no_catch')
-            if no_catch is '0':
-                self.no_catch = 0
-            else:
-                self.no_catch = 1
-            auto_rename = config.get('devsetting', 'auto_rename')
-            if auto_rename is '0':
-                self.auto_rename = 0
-            else:
-                self.auto_rename = 1
-
         if config.has_section('keystone'):
             self.admin_token = config.get('keystone', 'admin_token')
             self.auth_url_v2 = config.get('keystone', 'auth_url_v2')

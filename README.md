@@ -111,7 +111,7 @@ Support both Swift tempauth and keystoneauth, specified by `auth_version` in con
 TODO
 ---------------
 - change endpoint create
-- use a separated user auth module
+- use a separated user auth module (may use the swift's tempauth like method, which uses memcache to store token)
 - add test for copy and move
 - functest, probtest, unittest
 - seperated dir refresh

@@ -68,6 +68,7 @@ def create_tables():
     # database.create_tables([AccountModel])
 
 
-# create_tables()
+if __name__ == '__main__':
+    create_tables()
 
 # test()
