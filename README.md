@@ -110,11 +110,11 @@ Support both Swift tempauth and keystoneauth, specified by `auth_version` in con
 
 TODO
 ---------------
-- change endpoint create
-- use a separated user auth module (may use the swift's tempauth like method, which uses memcache to store token)
+- ~~change endpoint create~~
+- use a separated user auth module (may use the swift's tempauth like method, which uses memcache to store token, set a expire time on each token, or the auth middleware <https://github.com/talons/talons>)
 - add test for copy and move
 - functest, probtest, unittest
-- seperated dir refresh
+- ~~seperated dir refresh~~
 - deal with the security of password storing and transferring
 - ~~DELETE /v1/account~~
 - ~~Multi-user support, need to integrate keystone~~

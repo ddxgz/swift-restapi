@@ -8,7 +8,6 @@ import sys, os
 import datetime
 import logging
 import ast
-import functools
 
 from swiftutils import get_temp_key, get_temp_url
 
@@ -24,7 +23,7 @@ import keystonewrap
 import swiftwrap
 from utils import pretty_logging, list_with_key
 
-# logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========',
+# logging.basicConfig(format='===========My:%(levelname)s:%(message)s=========', 
 #     level=logging.DEBUG)
 # logging.basicConfig(level=logging.DEBUG,
 #                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
@@ -33,36 +32,25 @@ from utils import pretty_logging, list_with_key
 #sys.path.append('.')
 
 
-def auth_required(f):
-    @functools.wraps(f)
-    def decorated(*args, **kwargs):
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return authenticate()
-        return f(*args, **kwargs)
-    return decorated
+class PathListener:
+    """
+    unuseful at present
+    """
+    def __init__(self):
+        self.conf = Config()
 
-
-def tstauth_required(f):
-    @functools.wraps(f)
-    def decorated(*args, **kwargs):
-        logging.debug('in decorator')
-        self, req, resp = enumerate(args)
-        logging.debug()
-        logging.debug(req.get_header('username'))
-        return f(*args, **kwargs)
-    return decorated
+    def on_get(self, req, resp, path, thefile):
+        pass
 
 
 class HomeListener:
     def __init__(self):
         self.conf = Config()
 
-    @tstauth_required
     def on_get(self, req, resp):
         """
         :param req.header.username: the username, should be tenant:user when dev
-        :param req.header.password: password
+        :param req.header.password: password 
 
         :returns: a json contains all objects in disk container, and metameata
                 {"meta":{}, "objects":{"obj1": {}}}
@@ -73,7 +61,7 @@ class HomeListener:
             password = req.get_header('password')
             logging.debug('username:%s, password:%s' % (username, password))
         except:
-            raise falcon.HTTPBadRequest('bad req',
+            raise falcon.HTTPBadRequest('bad req', 
                 'please check if the req is correct, put username and \
                     password in the headers.')
         try:
@@ -103,7 +91,7 @@ class HomeListener:
             for obj in objects:
                 logging.debug('obj:%s' % obj.get('name'))
                 objs[obj.get('name')] = obj
-            resp_dict['objects'] = objs
+            resp_dict['objects'] = objs        
             logging.debug('resp_dict:%s' % resp_dict)
         except UserNotExistException:
             logging.debug('in UserNotExistException')
@@ -120,15 +108,15 @@ class HomeListener:
             raise falcon.HTTPServiceUnavailable(
                     'Service Error',
                     description,
-                    30)
+                    30)     
         resp.status = falcon.HTTP_200
-        resp.body = json.dumps(resp_dict, encoding='utf-8',
+        resp.body = json.dumps(resp_dict, encoding='utf-8', 
             sort_keys=True, indent=4)
 
     def on_post(self, req, resp):
         """
         :param req.header.username: the username, should be tenant:user when dev
-        :param req.header.password: password
+        :param req.header.password: password 
 
         :returns: a json contains the successfully changed files
         """
@@ -138,14 +126,14 @@ class HomeListener:
             password = req.get_header('password') or 'pw'
             logging.debug('in home post, username:%s, password:%s' % (username, password))
         except:
-            raise falcon.HTTPBadRequest('bad req',
+            raise falcon.HTTPBadRequest('bad req', 
                 'when read from req, please check if the req is correct.')
         try:
             # logging.debug('env:%s , \nstream:%s, \ncontext:%s, \ninput:%s, \n\
             #     params: %s , ' % (
-            #     req.env, req.stream.read(), req.context,
+            #     req.env, req.stream.read(), req.context, 
             #     req.env['wsgi.input'], req.params))
-
+     
             logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
                 self.conf.auth_url, self.conf.auth_version))
 
@@ -160,7 +148,7 @@ class HomeListener:
             copy_list = []
             move_list = list_with_key(update_list, 'move')
             copy_list = list_with_key(update_list, 'copy')
-
+   
             # if len(update_list) > 0:
             #     for pair in update_list:
             #         # pretty_logging(pair)
@@ -200,7 +188,7 @@ class HomeListener:
             else:
                 pretty_logging({}, 'no files in update_list!')
 
-            # user = AccountModel.get(AccountModel.username==username,
+            # user = AccountModel.get(AccountModel.username==username, 
             #                             AccountModel.password==password)
             logging.debug('1st resp_dict:%s' % resp_dict)
 
@@ -211,7 +199,7 @@ class HomeListener:
             resp_dict['join_date'] = user.join_date
             resp_dict['keystone_info'] = user.keystone_info
             logging.debug('2nd resp_dict:%s' % resp_dict)
-
+     
         except UserNotExistException:
             logging.debug('in UserNotExistException')
             resp_dict['info'] = 'user:%s does not exist' % username
@@ -227,15 +215,15 @@ class HomeListener:
             raise falcon.HTTPServiceUnavailable(
                     'Service Error',
                     description,
-                    30)
+                    30)         
         resp.status = falcon.HTTP_201
-        resp.body = json.dumps(resp_dict, encoding='utf-8',
+        resp.body = json.dumps(resp_dict, encoding='utf-8', 
             sort_keys=True, indent=4)
 
     def on_delete(self, req, resp):
         resp.status = falcon.HTTP_405
-        resp.body = json.dumps({'info':'Delete home is not implemented yet!'},
-            encoding='utf-8',
+        resp.body = json.dumps({'info':'Delete home is not implemented yet!'}, 
+            encoding='utf-8', 
             sort_keys=True, indent=4)
 
 
@@ -245,9 +233,9 @@ class DiskSinkAdapter(object):
     def __call__(self, req, resp, path2file):
         """
         :param req.header.username: the username, should be tenant:user when dev
-        :param req.header.password: password
-        :path2file the part in the request url /v1/disk/(?P<path2file>.+?), to
-            identify the resource to manipulate
+        :param req.header.password: password 
+        :path2file the part in the request url /v1/disk/(?P<path2file>.+?), to 
+            identify the resource to manipulate 
 
         :returns: a json contains correspond response info
             GET: the temp_url of the file in a resp dict
@@ -264,7 +252,7 @@ class DiskSinkAdapter(object):
             req_dir = req.get_header('dir') or None
             logging.debug('username:%s, password:%s' % (username, password))
         except:
-            raise falcon.HTTPBadRequest('bad req',
+            raise falcon.HTTPBadRequest('bad req', 
                 'when read from req, please check if the req is correct.')
 
         if req.method == 'GET':
@@ -316,7 +304,7 @@ class DiskSinkAdapter(object):
                 raise falcon.HTTPServiceUnavailable(
                         'Service Error',
                         description,
-                        30)
+                        30)   
 
         elif req.method == 'PUT':
             try:
@@ -334,14 +322,14 @@ class DiskSinkAdapter(object):
                                   user.password,
                                   os_options=os_options,
                                       auth_version=self.conf.auth_version)
-                logging.debug('url:%s, toekn:%s, if dir:%s' %
+                logging.debug('url:%s, toekn:%s, if dir:%s' % 
                     (storage_url, auth_token, req_dir))
 
                 if req_dir:
                     # modify to create multiple dir when req_dir with multiple '/'
                     req_dir = req_dir.rstrip('/')
                     req_dir += '/'
-
+                    
                     content_type = 'application/directory'
                     obj = None
 
@@ -361,7 +349,7 @@ class DiskSinkAdapter(object):
                 logging.debug('resp_dict:%s' % resp_dict)
 
             except:
-                raise falcon.HTTPBadRequest('bad req',
+                raise falcon.HTTPBadRequest('bad req', 
                     'username or password not correct!')
 
         elif req.method == 'DELETE':
@@ -377,7 +365,7 @@ class DiskSinkAdapter(object):
                                   user.keystone_tenant+':'+user.keystone_username,
                                   user.password,
                                   auth_version=self.conf.auth_version)
-                meta, objects = conn.get_container(user.disk_container,
+                meta, objects = conn.get_container(user.disk_container, 
                     prefix=path2file)
                 logging.debug('meta: %s,  \n objects: %s' % (meta, objects))
                 if objects:
@@ -392,9 +380,9 @@ class DiskSinkAdapter(object):
                 logging.debug('resp_dict:%s' % resp_dict)
 
             except:
-                raise falcon.HTTPBadRequest('bad req',
+                raise falcon.HTTPBadRequest('bad req', 
                     'username or password not correct!')
-        resp.body = json.dumps(resp_dict, encoding='utf-8',
+        resp.body = json.dumps(resp_dict, encoding='utf-8', 
             sort_keys=True, indent=4)
 
 
@@ -405,8 +393,8 @@ class AccountListener:
     def on_put(self, req, resp):
         """
         :param req.header.username: the username
-        :param req.header.password: password
-        :param req.header.email: email
+        :param req.header.password: password 
+        :param req.header.email: email 
 
         :returns: a json contains info of the operation, if the register is
             success or failed
@@ -420,17 +408,17 @@ class AccountListener:
             email = req.get_header('email') or 'email'
             # params = req.get_param_as_list()
             # logging.debug('params:%s'%params)
-            logging.debug('username:%s, password:%s, email:%s' %
+            logging.debug('username:%s, password:%s, email:%s' % 
                 (username, password, email))
         except:
-            raise falcon.HTTPBadRequest('bad req',
+            raise falcon.HTTPBadRequest('bad req', 
                 'when read from req, please check if the req is correct.')
-
+        
         try:
             logging.debug('in account put create')
 
             with database.atomic():
-                # AccountModel.create(username=username,
+                # AccountModel.create(username=username, 
                 #     password=password,
                 #     email=email,
                 #     join_date=str(datetime.datetime.now())+' GMT+8',
@@ -438,7 +426,7 @@ class AccountListener:
                 #     swift_tenant='test',
                 #     swift_username=username,
                 #     swift_password=password)
-                new_user = AccountModel.create(username=username,
+                new_user = AccountModel.create(username=username, 
                     password=password,
                     email=email,
                     join_date=str(datetime.datetime.now())+' GMT+8',
@@ -454,13 +442,13 @@ class AccountListener:
             #                       self.conf.account_username,
             #                       self.conf.password,
             #                       auth_version=self.conf.auth_version or 1)
-            keystone_info = swiftwrap.create_user(new_user.keystone_tenant,
+            keystone_info = swiftwrap.create_user(new_user.keystone_tenant, 
                 new_user.keystone_username,
-                new_user.keystone_password,
+                new_user.keystone_password, 
                 new_user.account_level)
             logging.debug('keystone_info:%s' % keystone_info)
             q = AccountModel.update(keystone_info=keystone_info).where(
-                AccountModel.username == username,
+                AccountModel.username == username, 
                 AccountModel.password == password)
             q.execute()
             resp_dict['info'] = 'successfully create user:%s' % username
@@ -468,7 +456,7 @@ class AccountListener:
             resp.status = falcon.HTTP_201
         except KeystoneUserCreateException:
             logging.error('in restapi KeystoneUserCreateException!')
-            q = AccountModel.delete().where(AccountModel.username==username,
+            q = AccountModel.delete().where(AccountModel.username==username, 
                     AccountModel.password==password)
             q.execute()
             resp_dict['info'] = 'create user failed, did not create user:%s' % username
@@ -484,13 +472,13 @@ class AccountListener:
             resp_dict['info'] = 'user exists, did not create user:%s' % username
             resp.status = falcon.HTTP_409
             try:
-                change_user = AccountModel.get(AccountModel.username==username,
+                change_user = AccountModel.get(AccountModel.username==username, 
                                 AccountModel.password==password)
             except:
                 logging.debug('change user data failed...')
         except:
             logging.error('restapi_keystone put account Exception!')
-            q = AccountModel.delete().where(AccountModel.username==username,
+            q = AccountModel.delete().where(AccountModel.username==username, 
                     AccountModel.password==password)
             q.execute()
             resp_dict['info'] = 'create user failed, did not create user:%s' % username
@@ -511,16 +499,16 @@ class AccountListener:
             # email = req.get_header('email') or 'email'
             # params = req.get_param_as_list()
             # logging.debug('params:%s'%params)
-            logging.debug('username:%s, password:%s' %
+            logging.debug('username:%s, password:%s' % 
                 (username, password))
         except:
-            raise falcon.HTTPBadRequest('bad req',
+            raise falcon.HTTPBadRequest('bad req', 
                 'when read from req, please check if the req is correct.')
-
+        
         try:
             logging.debug('in account model get')
 
-            # user = AccountModel.get(AccountModel.username==username,
+            # user = AccountModel.get(AccountModel.username==username, 
             #                             AccountModel.password==password)
             user = AccountModel.auth(username, password)
 
@@ -533,7 +521,7 @@ class AccountListener:
             resp_dict['disk_container'] = user.disk_container
             resp_dict['auth'] = 1
 
-            # keystone_info = swiftwrap.createuser(new_user.keystone_tenant,
+            # keystone_info = swiftwrap.createuser(new_user.keystone_tenant, 
             #     new_user.keystone_username,
             #     new_user.keystone_password, new_user.account_level)
 
@@ -576,14 +564,14 @@ class AccountListener:
             # email = req.get_header('email') or 'email'
             # params = req.get_param_as_list()
             # logging.debug('params:%s'%params)
-            logging.debug('username:%s, password:%s' %
+            logging.debug('username:%s, password:%s' % 
                 (username, password))
         except:
-            raise falcon.HTTPBadRequest('bad req',
+            raise falcon.HTTPBadRequest('bad req', 
                 'when read from req, please check if the req is correct.')
-
+        
         try:
-            # user = AccountModel.get(AccountModel.username==username,
+            # user = AccountModel.get(AccountModel.username==username, 
             #                             AccountModel.password==password)
             user = AccountModel.auth(username, password)
             logging.debug('delete after auth user')
@@ -596,11 +584,11 @@ class AccountListener:
             #     conn.delete_container(username+'_'+container)
             logging.debug('delete after con swift user')
 
-            keystonewrap.delete_user(user.keystone_tenant,
+            keystonewrap.delete_user(user.keystone_tenant, 
                     user.keystone_username,
                     user.keystone_password)
             logging.debug('after delete keytone user')
-            q = AccountModel.delete().where(AccountModel.username==username,
+            q = AccountModel.delete().where(AccountModel.username==username, 
                     AccountModel.password==password)
             q.execute()
             resp_dict['info'] = 'user:%s deleted successfully' % username
@@ -611,7 +599,7 @@ class AccountListener:
             logging.debug('in delete user Exception')
             resp_dict['info'] = 'delete user:%s not successfully' % username
             resp.status = falcon.HTTP_400
-        resp.body = json.dumps(resp_dict, encoding='utf-8',
+        resp.body = json.dumps(resp_dict, encoding='utf-8', 
             sort_keys=True, indent=4)
 
 

@@ -1,0 +1,4 @@
+curl -XPOST -d '{"auth": {"tenantName": "test", "passwordCredentials": {"username": "tester_for_delete7", "password": "testing"}}}' -H 'Content-type: application/json' http://10.200.43.103:5000/v2.0/tokens
+
+curl -v -H 'X-Auth-Token: 3d90e1bf30604bddbab033b30f1d67e3' http://10.200.43.103:8080/v1/AUTH_bd3ccec86634459981cec25d50e8be86
+
