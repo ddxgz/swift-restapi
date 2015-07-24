@@ -145,7 +145,7 @@ def create_user(swift_tenant, username, password):
         logging.error('there is a problem when getting the role for the user!')
         raise KeystoneUserCreateException
 
-    user_roles = [str(user_role.name) for user_role in roleforuser]
+    user_roles = [user_role.name.lower() for user_role in roleforuser]
     logging.debug('user_roles:{}'.format(user_roles))
 
     if len(roleforuser) == 0:
@@ -157,7 +157,7 @@ def create_user(swift_tenant, username, password):
         logging.error('there is no role for the user!')
         raise KeystoneUserCreateException
     # elif roleforuser[0].name == conf.swift_role:
-    elif conf.swift_role in user_roles:
+    elif conf.swift_role.lower() in user_roles:
         newuser = {}
         newuser['tenant'] = {'name':tenant.name, 'id':tenant.id}        
         newuser['user'] = {'name':user.name, 'id':user.id}
