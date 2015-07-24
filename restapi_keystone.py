@@ -30,35 +30,11 @@ from utils import pretty_logging, list_with_key
 #                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
 #                 datefmt='%d %b %Y %H:%M:%S')
 
-#sys.path.append('.')
-
-
-def auth_required(f):
-    @functools.wraps(f)
-    def decorated(*args, **kwargs):
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return authenticate()
-        return f(*args, **kwargs)
-    return decorated
-
-
-def tstauth_required(f):
-    @functools.wraps(f)
-    def decorated(*args, **kwargs):
-        logging.debug('in decorator')
-        self, req, resp = enumerate(args)
-        logging.debug()
-        logging.debug(req.get_header('username'))
-        return f(*args, **kwargs)
-    return decorated
-
 
 class HomeListener:
     def __init__(self):
         self.conf = Config()
 
-    @tstauth_required
     def on_get(self, req, resp):
         """
         :param req.header.username: the username, should be tenant:user when dev
