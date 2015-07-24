@@ -5,9 +5,9 @@ import logging
 
 # logging.basicConfig(format='===========%(levelname)s:%(message)s=========', 
 #     level=logging.DEBUG)
-# logging.basicConfig(level=logging.DEBUG,
-#                 format='\n[%(levelname)s] %(message)s [%(filename)s][line:%(lineno)d] %(asctime)s ',
-#                 datefmt='%d %b %Y %H:%M:%S')
+logging.basicConfig(level=logging.DEBUG,
+                format='\n[%(levelname)s] %(message)s [%(filename)s][line:%(lineno)d] %(asctime)s ',
+                datefmt='%d %b %Y %H:%M:%S')
 
 
 class Visit():

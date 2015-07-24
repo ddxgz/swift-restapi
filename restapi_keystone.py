@@ -47,11 +47,31 @@ def tstauth_required(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
         logging.debug('in decorator')
-        self, req, resp = enumerate(args)
-        logging.debug()
+        self, req, resp = args
+        logging.debug('req:{}, resp:{}'.format(req, resp))
         logging.debug(req.get_header('username'))
-        return f(*args, **kwargs)
+        try:
+            user = model_auth(req)
+        except:
+            raise
+        return f(auth=user, *args, **kwargs)
     return decorated
+
+
+def model_auth(req):
+    try:
+        username = req.get_header('username')
+        password = req.get_header('password')
+        logging.debug('username:%s, password:%s' % (username, password))
+    except:
+        raise falcon.HTTPBadRequest('bad req',
+            'please check if the req is correct, put username and \
+                password in the headers.')
+    try:
+        user = AccountModel.auth(username, password)
+    except:
+        raise
+    return user
 
 
 class HomeListener:
@@ -59,7 +79,7 @@ class HomeListener:
         self.conf = Config()
 
     @tstauth_required
-    def on_get(self, req, resp):
+    def on_get(self, req, resp, auth):
         """
         :param req.header.username: the username, should be tenant:user when dev
         :param req.header.password: password
@@ -68,19 +88,15 @@ class HomeListener:
                 {"meta":{}, "objects":{"obj1": {}}}
         """
         resp_dict = {}
-        try:
-            username = req.get_header('username')
-            password = req.get_header('password')
-            logging.debug('username:%s, password:%s' % (username, password))
-        except:
-            raise falcon.HTTPBadRequest('bad req',
-                'please check if the req is correct, put username and \
-                    password in the headers.')
+
         try:
             logging.debug('self.conf.auth_url: %s,  conf.auth_version: %s' % (
                 self.conf.auth_url, self.conf.auth_version))
 
-            user = AccountModel.auth(username, password)
+            # user = AccountModel.auth(username, password)
+            logging.debug('auth:{}'.format(auth))
+            user = auth
+
             resp_dict['info'] = 'successfully get user:%s' % username
             resp_dict['username'] = user.username
             resp_dict['email'] = user.email

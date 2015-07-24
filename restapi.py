@@ -18,11 +18,11 @@ conf = Config()
 app = falcon.API()
 
 if conf.auth_version == "2":
-    from restapi_keystone import HomeListener, PathListener, AccountListener, \
+    from restapi_keystone_old import HomeListener, AccountListener, \
         DiskSinkAdapter
 
 elif conf.auth_version is "1":
-    from restapi_tempauth import HomeListener, PathListener, AccountListener, \
+    from restapi_tempauth import HomeListener, AccountListener, \
         DiskSinkAdapter
 
 

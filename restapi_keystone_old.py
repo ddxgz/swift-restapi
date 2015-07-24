@@ -32,16 +32,6 @@ from utils import pretty_logging, list_with_key
 #sys.path.append('.')
 
 
-class PathListener:
-    """
-    unuseful at present
-    """
-    def __init__(self):
-        self.conf = Config()
-
-    def on_get(self, req, resp, path, thefile):
-        pass
-
 
 class HomeListener:
     def __init__(self):

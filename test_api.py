@@ -55,6 +55,7 @@ class TestAPI:
 
 
     def run_all(self):
+        self.test_put_account()
         self.test_get_home()
         # self.test_put_account()
         # self.test_put_dir()
